@@ -1,0 +1,93 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["src/**/*", "!src/components/ui/*", "!biome.json"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "recommended": true
+      },
+      "performance": {
+        "recommended": true
+      },
+      "style": {
+        "recommended": true
+      },
+      "nursery": {
+        "recommended": true
+      },
+      "security": {
+        "recommended": true,
+        "noGlobalEval": "error"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "error",
+        "noClassAssign": "error",
+        "noConfusingLabels": "error",
+        "noConsole": "error",
+        "noConstEnum": "error",
+        "noDoubleEquals": "error",
+        "noDuplicateAtImportRules": "error",
+        "noDuplicateCase": "error",
+        "noDuplicateElseIf": "error",
+        "noImplicitAnyLet": "error",
+        "noSuspiciousSemicolonInJsx": "error",
+        "noUnassignedVariables": "error",
+        "noUnknownAtRules": "off",
+        "noVar": "error",
+        "recommended": false,
+        "useAwait": "error"
+      },
+      "complexity": {
+        "recommended": true,
+        "useArrowFunction": "error",
+        "useIndexOf": "error"
+      },
+      "correctness": {
+        "noConstAssign": "error",
+        "noUnusedFunctionParameters": "error",
+        "noUnusedImports": "error",
+        "noUnusedLabels": "error",
+        "noUnusedVariables": "error",
+        "useJsxKeyInIterable": "on"
+      }
+    },
+    "domains": {
+      "react": "recommended"
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "attributePosition": "multiline",
+      "jsxQuoteStyle": "single",
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "es5"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on",
+        "recommended": true,
+        "useSortedAttributes": "on",
+        "useSortedProperties": "on"
+      }
+    }
+  }
+}
