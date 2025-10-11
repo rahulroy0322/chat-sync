@@ -17,7 +17,15 @@ const close = () => {
 
 const server = http.listen(PORT, () => {
   logger.info(`app is running on port : ${PORT}`);
-  connectDb(close);
+  connectDb(close).then(async () => {
+    // 0 &&
+    //   console.log(
+    //     await findUser({
+    //       uname: "uname2",
+    //     })
+    //   );
+    // console.log(await findMsgsByUId("68ea2001e603985004224ae1"));
+  });
 });
 
 process.on('SIGTERM', close);

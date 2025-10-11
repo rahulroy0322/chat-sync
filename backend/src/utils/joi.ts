@@ -22,7 +22,7 @@ const validateJoi = <T>(
   schema: ObjectSchema<T>,
   data: unknown
 ): ValidationResult<T> =>
-  schema.validate(data, {
+  schema.validate(data || {}, {
     stripUnknown: true,
     allowUnknown: false,
     abortEarly: false,

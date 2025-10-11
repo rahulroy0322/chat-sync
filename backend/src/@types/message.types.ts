@@ -1,0 +1,12 @@
+import type { ModelType } from './model.types';
+import type { UserType } from './user.types';
+
+type MSGType = {
+  _id: string;
+  createdBy: UserType['_id'];
+  users: UserType['_id'][];
+};
+
+type MSGModelType = ModelType<MSGType>;
+
+export type { MSGType, MSGModelType };

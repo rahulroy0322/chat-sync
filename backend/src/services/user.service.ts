@@ -63,12 +63,22 @@ const findUserByEmail = ({
     '+password'
   );
 
-const findUserByID = ({
-  _id,
-}: Pick<UserType, '_id'>): DbResType<UserType, null> =>
-  findUser({
-    _id,
-  });
+const findUserByID = async (
+  id: UserType['_id']
+): Promise<DbResType<UserType, null>> => {
+  try {
+    return (await User.findById(id))?.toJSON() as UserType;
+  } catch (e) {
+    if (e instanceof DbError) {
+      return {
+        error: e,
+      };
+    }
+
+    return null;
+  }
+};
+
 export {
   createUser,
   findUserByEmail,

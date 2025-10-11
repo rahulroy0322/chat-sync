@@ -1,4 +1,5 @@
 import type { RequestHandler } from 'express';
+import type { ResType } from '../@types/res.types';
 import {
   BadRequestError,
   ConflictError,
@@ -63,12 +64,15 @@ const registerController: RequestHandler = async (req, res) => {
   const access = singAccessToken(_user);
 
   res.json({
-    user,
-    token: {
-      refresh,
-      access,
+    success: true,
+    data: {
+      user,
+      token: {
+        refresh,
+        access,
+      },
     },
-  });
+  } satisfies ResType);
 };
 
 const loginController: RequestHandler = async (req, res) => {
@@ -105,12 +109,15 @@ const loginController: RequestHandler = async (req, res) => {
   const access = singAccessToken(_user);
 
   res.json({
-    user,
-    token: {
-      refresh,
-      access,
+    success: true,
+    data: {
+      user,
+      token: {
+        refresh,
+        access,
+      },
     },
-  });
+  } satisfies ResType);
 };
 
 export { registerController, loginController };

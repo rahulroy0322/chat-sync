@@ -1,6 +1,7 @@
 import express, { type Express, json, urlencoded } from 'express';
+import type { AccessTokenUserType } from './@types/jwt.types';
 import { errorMiddleware } from './middlewares/error.middleware';
-import { requestInfoMeddleware } from './middlewares/info.middleware';
+import { requestInfoMiddleware } from './middlewares/info.middleware';
 import { notFoundMiddleware } from './middlewares/not-found.middleware';
 import apiRouter from './routes';
 
@@ -14,7 +15,7 @@ app.use(
 );
 
 // req-> info
-app.use(requestInfoMeddleware);
+app.use(requestInfoMiddleware);
 
 // api routes
 app.use('/api/v1', apiRouter);
@@ -24,3 +25,11 @@ app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 export default app;
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AccessTokenUserType;
+    }
+  }
+}

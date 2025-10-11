@@ -2,7 +2,7 @@ import type { RequestHandler } from 'express';
 
 import logger from '../logger/log';
 
-const requestInfoMeddleware: RequestHandler = (req, res, next) => {
+const requestInfoMiddleware: RequestHandler = (req, res, next) => {
   const start = Date.now();
   res.once('finish', () => {
     const now = Date.now();
@@ -15,4 +15,4 @@ const requestInfoMeddleware: RequestHandler = (req, res, next) => {
   next();
 };
 
-export { requestInfoMeddleware };
+export { requestInfoMiddleware };
