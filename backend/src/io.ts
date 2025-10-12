@@ -1,0 +1,205 @@
+import { type DefaultEventsMap, Server, type Socket } from "socket.io";
+import http from "./http";
+import { getToken, type GetTokenPropsType } from "./utils/auth";
+import { verifyAccessToken } from "./services/jwt.service";
+import type { EventsMap } from "socket.io/dist/typed-events";
+import type { AccessTokenUserType } from "./@types/jwt.types";
+import { redis, setToRedis } from "./services/redis.service";
+import { REDIS } from "./constants/redis.constants";
+import { getSocketKey, getStatusKey, getUserKey, UTSK } from "./utils/io";
+import { formatJoiError, validateJoi } from "./utils/joi";
+import { contactsSchema, toSchema } from "./schemas/io.schema";
+import logger from "./logger/log";
+import type { ObjectSchema, ArraySchema, StringSchema } from "joi";
+
+const validateAndLog = <T>(
+  schema: ObjectSchema<T> | ArraySchema<T> | StringSchema<T>,
+  data: unknown,
+  msg: string
+):
+  | {
+      success: true;
+      value: T;
+    }
+  | {
+      success: false;
+    } => {
+  const { error, warning, value } = validateJoi(schema, data);
+  if (warning) {
+    logger.warn(formatJoiError(warning), `WARNING in socket -> ${msg}!`);
+  }
+
+  if (error) {
+    const _error = formatJoiError(error);
+    console.error(_error, `ERROR!: in socket -> ${msg}`);
+    return {
+      success: false,
+    };
+  }
+
+  return {
+    success: true,
+    value,
+  };
+};
+
+const typing = (socket: Socket) => {
+  let timer: ReturnType<typeof setTimeout>;
+  socket.on("typing:start", (to) => {
+    const res = validateAndLog(toSchema, to, "typing:start");
+
+    if (!res.success) {
+      return;
+    }
+
+    socket.to(res.value).emit("typing:start");
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      socket.to(res.value).emit("typing:stop");
+      clearTimeout(timer);
+    }, 1000);
+  });
+
+  socket.on("typing:stop", (to) => {
+    const res = validateAndLog(toSchema, to, "typing:start");
+
+    if (!res.success) {
+      return;
+    }
+    socket.to(res.value).emit("typing:stop");
+    console.log("stop");
+    if (timer) {
+      clearTimeout(timer);
+    }
+  });
+};
+
+const io = new Server<
+  DefaultEventsMap,
+  EventsMap,
+  DefaultEventsMap,
+  {
+    user: AccessTokenUserType;
+  }
+>(http, {
+  cors: {
+    origin: ["http://localhost:5173"], // Your frontend URL
+    methods: ["GET", "POST"],
+  },
+});
+
+io.use((socket, next) => {
+  const token = getToken(socket.handshake as GetTokenPropsType).split(" ")[1];
+
+  try {
+    const { user } = verifyAccessToken(token);
+
+    socket.data.user = user;
+    next();
+  } catch (e) {
+    next({
+      ...(e || {}),
+      data: {
+        code: 401,
+      },
+    } as unknown as Error);
+  }
+});
+
+io.on("connection", async (socket) => {
+  console.log({ id: socket.id }, "connection");
+  const user = socket.data.user;
+
+  socket
+    .to(
+      getStatusKey({
+        userId: user.sub,
+      })
+    )
+    .emit("online", {
+      userId: user.sub,
+      socketId: socket.id,
+    });
+
+  typing(socket);
+
+  socket.on("contacts", async (contacts) => {
+    const res = validateAndLog(contactsSchema, contacts, "contacts");
+
+    if (!res.success) {
+      return;
+    }
+
+    const contactsIds = res.value.map((id) => {
+      socket.join(
+        getStatusKey({
+          userId: id,
+        })
+      );
+
+      return getUserKey(id);
+    });
+
+    const data = (await redis.mget(contactsIds))
+      .filter((id) => typeof id === "string")
+      .map((value) => {
+        const {
+          key,
+          data,
+        }: {
+          key: string;
+          data: string;
+        } = JSON.parse(value);
+
+        const uid = key.substring(UTSK.length);
+
+        return {
+          uid,
+          socket: data,
+        };
+      });
+
+    socket.emit("contacts", data);
+  });
+
+  socket.on("chat", async (uid: string, chat) => {
+    const res = validateAndLog(toSchema, uid, "chat");
+
+    if (!res.success) {
+      return;
+    }
+
+    const socketId = await redis.get(getUserKey(res.value));
+
+    if (socketId) {
+      io.to(socketKey).emit(chat);
+    }
+  });
+
+  const userKey = getUserKey(user.sub);
+  const socketKey = getSocketKey(socket.id);
+
+  await redis.sadd(REDIS.USERS, user.sub);
+  await setToRedis(userKey, socket.id);
+  await setToRedis(socketKey, user.sub);
+
+  socket.on("disconnect", async () => {
+    logger.info({ id: socket.id }, "disconnect");
+    socket
+      .to(
+        getStatusKey({
+          userId: user.sub,
+        })
+      )
+      .emit("offline", {
+        userId: user.sub,
+        socketId: socket.id,
+      });
+    await redis.srem(REDIS.USERS, user.sub);
+    await redis.del(userKey, socketKey);
+  });
+});
+
+export default http;

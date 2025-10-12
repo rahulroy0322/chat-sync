@@ -1,9 +1,13 @@
 import type {
   AccessTokenUserType,
   RefreshTokenUserType,
-} from '../@types/jwt.types';
-import type { UserType } from '../@types/user.types';
-import { sing } from '../utils/jwt';
+} from "../@types/jwt.types";
+import type { UserType } from "../@types/user.types";
+import { UnauthorizedError } from "../error/app.error";
+import logger from "../logger/log";
+import { accessTokenUserSchema } from "../schemas/user.schema";
+import { formatJoiError, validateJoi } from "../utils/joi";
+import { sing, verify } from "../utils/jwt";
 
 const singAccessToken = ({ _id, avatarUrl, email, uname }: UserType) =>
   sing(
@@ -14,7 +18,7 @@ const singAccessToken = ({ _id, avatarUrl, email, uname }: UserType) =>
       uname,
     } satisfies AccessTokenUserType,
     {
-      expiresIn: '5m',
+      expiresIn: "5m",
     }
   );
 
@@ -24,8 +28,36 @@ const singRefreshToken = (user: UserType) =>
       sub: user._id,
     } satisfies RefreshTokenUserType,
     {
-      expiresIn: '7D',
+      expiresIn: "7D",
     }
   );
 
-export { singAccessToken, singRefreshToken };
+const verifyAccessToken = (
+  token: string | undefined
+): {
+  user: AccessTokenUserType;
+} => {
+  if (!token) {
+    throw new UnauthorizedError();
+  }
+
+  const data = verify(token);
+
+  const { warning, error, value } = validateJoi(accessTokenUserSchema, data);
+
+  if (warning) {
+    logger.warn(formatJoiError(warning), "WARNING in verifyAccessToken!");
+  }
+
+  if (error) {
+    const _error = formatJoiError(error);
+    console.error(_error, "ERROR!: in verifyAccessToken");
+    throw new UnauthorizedError("invalid token send!");
+  }
+
+  return {
+    user: value,
+  };
+};
+
+export { singAccessToken, singRefreshToken, verifyAccessToken };
