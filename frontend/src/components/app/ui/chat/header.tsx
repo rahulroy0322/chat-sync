@@ -57,8 +57,8 @@ const ChatHeaderUI: FC<ChatHeaderUIPropsType> = ({
         </Avatar>
 
         <div role='presentation'>
-          <h3 className='text-sm font-semibold'>Army Man</h3>
-          <h4 className='font-light text-xs text-muted'>
+          <h3 className='text-sm font-semibold'>{name}</h3>
+          <h4 className='font-light text-xs text-muted-foreground'>
             <b className='font-bold'>Last Seen</b> :{' '}
             <span>
               {lastSeen.substring(0, 9)}

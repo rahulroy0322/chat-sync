@@ -1,3 +1,3 @@
-type ChatStatusType = 'send' | 'painding' | 'read' | 'riched';
+type ChatStatusType = 'failed' | 'send' | 'painding' | 'read' | 'riched';
 
 export type { ChatStatusType };

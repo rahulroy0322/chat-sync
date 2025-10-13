@@ -20,12 +20,12 @@ const createChatController: RequestHandler = async (req, res) => {
   );
 
   if (warning) {
-    logger.warn(formatJoiError(warning), 'WARNING in register!');
+    logger.warn(formatJoiError(warning), 'WARNING in createChatController!');
   }
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, 'ERROR!: in register');
+    console.error(_error, 'ERROR!: in createChatController');
     throw new ValueError(error.message);
   }
 
@@ -42,7 +42,7 @@ const createChatController: RequestHandler = async (req, res) => {
     throw new NotFoundError('Msg not found!');
   }
 
-  if (!msg.users.includes(user.sub)) {
+  if (msg.users.every((uid) => uid.toString() !== user.sub)) {
     throw new ForbiddenError('You are not in the chat!');
   }
 
@@ -84,7 +84,7 @@ const getChatsByMsgIdController: RequestHandler = async (req, res) => {
     throw new NotFoundError('Msg not found!');
   }
 
-  if (!msg.users.includes(user.sub)) {
+  if (!msg.users.some((uid) => uid.toString() === user.sub)) {
     throw new ForbiddenError('You are not in the chat!');
   }
 

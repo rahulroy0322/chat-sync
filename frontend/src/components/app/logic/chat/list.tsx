@@ -20,7 +20,7 @@ const ChatList: FC = () => {
     });
   }, [chats]);
 
-  if (!user) {
+  if (!user || !chats) {
     return null;
   }
 

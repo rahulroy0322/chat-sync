@@ -21,7 +21,7 @@ const findChatsByMsgId = async (id: string): DbResType<ChatType[], null> => {
   try {
     return await Chat.find({
       msgId: id,
-    });
+    }).populate('sender');
   } catch (e) {
     if (e instanceof DbError) {
       return {

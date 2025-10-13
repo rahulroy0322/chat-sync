@@ -51,10 +51,13 @@ const videoChatSchema = J.object({
   }),
 });
 
-const createChatSchema = J.alternatives<ChatType>()
-  .try(textChatSchema, imageChatSchema, videoChatSchema)
-  .messages({
-    'alternatives.match': 'Invalid chat format',
-  });
+const createChatSchema = J.alternatives<ChatType>().try(
+  textChatSchema,
+  imageChatSchema,
+  videoChatSchema
+);
+// .messages({
+//   'alternatives.match': 'Invalid chat format',
+// });
 
 export { createChatSchema };

@@ -201,4 +201,5 @@ io.on('connection', async (socket) => {
   });
 });
 
+export { io };
 export default http;

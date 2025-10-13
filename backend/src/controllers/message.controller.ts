@@ -47,6 +47,7 @@ const getOrCreateMessagesController: RequestHandler = async (req, res) => {
     throw new ValueError(error.message);
   }
 
+  // ! ? TODO
   const data = await findOrCreateMsg(user.sub, value.uid);
 
   if (!data || 'error' in data) {

@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import {
   createContext,
   type FC,
@@ -7,14 +7,14 @@ import {
   useCallback,
   useEffect,
   useState,
-} from "react";
-import type { MessageType } from "@/@types/message.types";
-import type { UserType } from "@/@types/user.types";
-import { req } from "@/api/main";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { addMessage, setMsgId } from "@/store/messages.store";
-import { setContactOpen } from "@/store/settings.store";
+} from 'react';
+import type { MessageType } from '@/@types/message.types';
+import type { UserType } from '@/@types/user.types';
+import { req } from '@/api/main';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { addMessage, setMsgId } from '@/store/messages.store';
+import { setContactOpen } from '@/store/settings.store';
 
 type ContextType = {
   loading: boolean;
@@ -62,8 +62,8 @@ const UserLink: FC<UserLinkPropsType> = ({ id, children }) => {
       setLoading(true);
       const { message } = await req<{
         message: MessageType;
-      }>("/msg", {
-        method: "POST",
+      }>('/msg', {
+        method: 'POST',
         body: {
           uid: id,
         },
@@ -73,7 +73,7 @@ const UserLink: FC<UserLinkPropsType> = ({ id, children }) => {
       setContactOpen(false);
       setMsgId(message._id);
     } catch (e) {
-      console.error("ERROR:", e);
+      console.error('ERROR:', e);
     } finally {
       setLoading(false);
     }
@@ -81,10 +81,10 @@ const UserLink: FC<UserLinkPropsType> = ({ id, children }) => {
 
   return (
     <Button
-      className={cn("hover:no-underline cursor-pointer")}
+      className={cn('hover:no-underline cursor-pointer')}
       disabled={loading}
       onClick={handleClick}
-      variant="link"
+      variant='link'
     >
       {children}
     </Button>
@@ -94,17 +94,17 @@ const UserLink: FC<UserLinkPropsType> = ({ id, children }) => {
 type UserItemPropsType = UserType;
 
 const UserItem: FC<UserItemPropsType> = ({ _id, avatarUrl, uname }) => (
-  <li className="flex gap-2 items-center p-1 w-full">
+  <li className='flex gap-2 items-center p-1 w-full'>
     <UserLink id={_id}>
-      <Avatar className="size-10">
+      <Avatar className='size-10'>
         <AvatarImage src={avatarUrl} />
         <AvatarFallback>{uname.at(0)}</AvatarFallback>
       </Avatar>
       <div
-        className="grow pointer-events-none cursor-pointer"
-        role="presentation"
+        className='grow pointer-events-none cursor-pointer'
+        role='presentation'
       >
-        <h2 className="text-base font-semibold w-fit">{uname}</h2>
+        <h2 className='text-base font-semibold w-fit'>{uname}</h2>
       </div>
     </UserLink>
   </li>
@@ -121,14 +121,14 @@ const AddUsersList: FC = () => {
       setIsLoading(true);
       try {
         const { users } = await req<{ users: UserType[] }>(
-          "user",
+          'user',
           undefined,
           cont.signal
         );
 
         setUsers(users);
       } catch (e) {
-        console.error("ERROR:", e);
+        console.error('ERROR:', e);
       } finally {
         setIsLoading(false);
       }
@@ -142,14 +142,17 @@ const AddUsersList: FC = () => {
   }, []);
 
   if (isLoading) {
-    return "fetching";
+    return 'fetching';
   }
 
   return (
     <ContextPriovider>
       <ul>
         {users.map((user) => (
-          <UserItem {...user} key={user._id} />
+          <UserItem
+            {...user}
+            key={user._id}
+          />
         ))}
       </ul>
     </ContextPriovider>

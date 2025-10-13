@@ -1,119 +1,16 @@
 import { create } from 'zustand';
 import type { ChatType } from '@/@types/chat.types';
-import type { UserType } from '@/@types/user.types';
+import { req } from '@/api/main';
 import useUser from './user.store';
 
-const user1 = {
-  _id: 'u-1',
-  avatarUrl: '/profile.gif',
-  uname: 'username',
-} satisfies UserType;
-
-const user2 = {
-  ...user1,
-  avatarUrl: '/worker.gif',
-  _id: 'u-2',
-};
-
-const getUser = () => (Math.random() > 0.5 ? user1 : user2);
-
-const date = '2022-10-04T13:45:41.869Z';
-
-const chats = [
-  {
-    _id: 'chat-01',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: 'hi',
-    type: 'text',
-  },
-  {
-    _id: 'chat-02',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: 'hlo',
-    type: 'text',
-  },
-  {
-    _id: 'chat-03',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: 'how are You',
-    type: 'text',
-  },
-  {
-    _id: 'chat-04',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: 'fine.',
-    type: 'text',
-  },
-  {
-    _id: 'chat-05',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'riched',
-    text: 'what about u??',
-    type: 'text',
-  },
-  {
-    _id: 'chat-06',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: "i'm also fine",
-    type: 'text',
-  },
-  {
-    _id: 'chat-07',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: 'cjdbsajcvjsa',
-    type: 'img',
-    url: '/image.png',
-  },
-  {
-    _id: 'chat-08',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: 'cjdbsajcvjsa',
-    type: 'img',
-    url: '/image.png',
-  },
-  {
-    _id: 'chat-09',
-    createdAt: date,
-    editedAt: date,
-    sender: getUser(),
-    status: 'read',
-    text: 'cjdbsajcvjsa',
-    type: 'img',
-    url: '/image.png',
-  },
-] satisfies ChatType[];
-
 type UseChatsType = {
-  chats: ChatType[];
+  chats: null | ChatType[];
   isSending: boolean;
   isLoading: boolean;
 };
 
 const useChats = create<UseChatsType>(() => ({
-  chats: chats,
+  chats: null,
   isLoading: false,
   isSending: false,
 }));
@@ -125,13 +22,35 @@ const setChats = (chats: ChatType[]) =>
     chats,
   });
 
-const sendChat = (msg: string) => {
+const fetchChats = async (id: string) => {
+  set({
+    isLoading: true,
+  });
+
+  try {
+    const { chats } = await req<{ chats: ChatType[] }>(`chat/msg/${id}`);
+
+    set({
+      chats,
+    });
+  } catch (e) {
+    console.error('ERROR:', e);
+  } finally {
+    set({
+      isLoading: false,
+    });
+  }
+};
+
+const sendChat = async (id: string, text: string) => {
   const user = useUser.getState().user;
   if (!user) {
     return;
   }
 
-  const oldChats = get().chats;
+  const oldChats = get().chats || [];
+
+  const date = new Date().toISOString();
 
   const data = {
     _id: Math.random().toString().substring(0, 3).toString(),
@@ -139,7 +58,7 @@ const sendChat = (msg: string) => {
     createdAt: date,
     editedAt: date,
     status: 'painding',
-    text: msg,
+    text,
     type: 'text',
     sender: user,
   } satisfies ChatType;
@@ -148,24 +67,34 @@ const sendChat = (msg: string) => {
     chats: oldChats.concat(data),
     isSending: true,
   });
-  setTimeout(
-    () => {
-      const _n = Math.random();
-      set({
-        chats: [
-          ...oldChats,
-          {
-            ...data,
-            status: _n > 0.75 ? 'read' : _n > 50 ? 'riched' : 'send',
-          },
-        ],
-        isSending: false,
-      });
-    },
-    Math.random() * 2 + 1000
-  );
+
+  try {
+    const { chat } = await req<{ chat: ChatType }>(`chat/msg/${id}`, {
+      method: 'POST',
+      body: {
+        ...data,
+        status: 'send',
+      },
+    });
+
+    set({
+      chats: [
+        ...oldChats,
+        {
+          ...chat,
+          sender: user,
+        },
+      ],
+    });
+  } catch (e) {
+    console.error('ERROR:', e);
+  } finally {
+    set({
+      isSending: false,
+    });
+  }
 };
 
-export { setChats, sendChat };
+export { setChats, sendChat, fetchChats };
 
 export default useChats;

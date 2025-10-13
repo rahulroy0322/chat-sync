@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import useChats, { sendChat } from '@/store/chat.store';
+import useMessages from '@/store/messages.store';
 import {
   ChatInput2ndWraperUI,
   ChatInputMainWraperUI,
@@ -24,6 +25,8 @@ import {
 
 const ChatInput: FC = () => {
   const isLoading = useChats((state) => state.isLoading || state.isSending);
+  // biome-ignore lint/style/noNonNullAssertion: It will be there
+  const msgId = useMessages((state) => state.selectedMsg)!;
   const [msg, setMsg] = useState('');
 
   const isSendDisabled = useMemo(() => {
@@ -32,7 +35,7 @@ const ChatInput: FC = () => {
 
   const handleMsgSubmit = () => {
     if (!msg.trim()) return;
-    sendChat(msg);
+    sendChat(msgId, msg);
     setMsg('');
   };
 

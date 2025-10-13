@@ -1,4 +1,3 @@
-import type { ChatStatusType } from './status.types';
 import type { UserType } from './user.types';
 
 type MessageTypeandTextType =
@@ -14,8 +13,6 @@ type MessageTypeandTextType =
 type MessageType = {
   _id: string;
   // lastMsgAt: string;
-  status: ChatStatusType;
-  sender: UserType;
   users: UserType[];
 } & MessageTypeandTextType;
 

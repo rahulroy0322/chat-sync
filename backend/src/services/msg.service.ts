@@ -5,7 +5,7 @@ import Msg from '../models/message.model';
 
 const findMsgByID = async (id: string): Promise<DbResType<MSGType, null>> => {
   try {
-    return (await Msg.findById(id))?.toJSON() as MSGType;
+    return (await Msg.findById(new Types.ObjectId(id)))?.toJSON() as MSGType;
   } catch (e) {
     if (e instanceof DbError) {
       return {
@@ -23,7 +23,7 @@ const findMsgsByUId = async (
   try {
     return await Msg.find({
       users: new Types.ObjectId(uid),
-    });
+    }).populate(['users']);
   } catch (e) {
     if (e instanceof DbError) {
       return {
@@ -60,7 +60,7 @@ const findOrCreateMsg = async (
       }
     );
 
-    if (msgs) {
+    if (msgs.length) {
       const msg = msgs[0]?.toJSON() as MSGType;
       if (msg) {
         return {

@@ -1,11 +1,12 @@
 import { PORT } from './config/env.config';
-import http from './io';
+import http, { io } from './io';
 import logger from './logger/log';
 import { connectDb } from './services/db.service';
 
 const close = () => {
   server.closeIdleConnections();
   server.closeAllConnections();
+  io.close();
   server.close((err) => {
     if (err) {
       logger.error(err, 'ERROR! in server close');

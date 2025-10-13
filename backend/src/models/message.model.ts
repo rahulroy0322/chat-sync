@@ -12,7 +12,7 @@ const MsgSchema = new Schema<MSGModelType>(
     // @ts-expect-error
     users: {
       type: [Schema.Types.ObjectId],
-      ref: 'User',
+      ref: 'user',
       required: [true, 'Users are required'],
       validate: {
         validator: (users: unknown[]) => users.length >= 2,
