@@ -16,7 +16,7 @@ type MessageType = {
   // lastMsgAt: string;
   status: ChatStatusType;
   sender: UserType;
-  user: UserType;
+  users: UserType[];
 } & MessageTypeandTextType;
 
 export type { MessageType, MessageTypeandTextType };

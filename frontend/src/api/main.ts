@@ -6,15 +6,17 @@ const BASE_URL = 'http://localhost:8000';
 
 const API_URL = `${BASE_URL}/api/v1`;
 
+type RequestOptionsType = RequestInit & {
+  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  body?: string;
+};
+
 const formateUrl = (path: string) =>
   path.startsWith('/') ? path.substring(1) : path;
 
 const reqImpl = async <R>(
   url: string,
-  options: RequestInit & {
-    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-    body?: string;
-  } = {
+  options: RequestOptionsType = {
     method: 'GET',
     body: undefined,
   }
@@ -29,36 +31,31 @@ const reqImpl = async <R>(
 const req = async <R>(
   url: string,
   options?: {
-    method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-    body?: string;
+    method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+    body?: unknown;
   },
   signal?: AbortSignal
 ): Promise<R> => {
   const { method = 'GET', body = undefined } = options || {};
   const { token } = useUser.getState();
 
-  const _options: RequestInit = {
+  const _options = {
     method,
     headers: {
       token: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
   };
   if (signal) {
-    _options.signal = signal;
-  }
-  if (signal) {
+    // @ts-expect-error
     _options.signal = signal;
   }
   if (body) {
-    _options.body = body;
+    // @ts-expect-error
+    _options.body = JSON.stringify(body);
   }
   try {
-    const data = await reqImpl<R>(url, {
-      headers: {
-        token: `Bearer ${token}`,
-      },
-      signal,
-    });
+    const data = await reqImpl<R>(url, _options as RequestOptionsType);
 
     if (!data.success) {
       throw data.error;
@@ -75,12 +72,9 @@ const req = async <R>(
     ) {
       await refreshToken();
 
-      const data = await reqImpl<R>(url, {
-        headers: {
-          token: `Bearer ${token}`,
-        },
-        signal,
-      });
+      // biome-ignore lint/style/noNonNullAssertion: it will be there
+      _options.headers.token = useUser.getState().token!;
+      const data = await reqImpl<R>(url, _options as RequestOptionsType);
 
       if (!data.success) {
         throw data.error;

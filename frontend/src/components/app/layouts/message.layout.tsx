@@ -1,21 +1,24 @@
-import { Search } from 'lucide-react';
-import { type FC, type PropsWithChildren, useCallback, useEffect } from 'react';
+import { Search, UserRoundPlus } from "lucide-react";
+import { type FC, type PropsWithChildren, useCallback, useEffect } from "react";
 import type {
   MessageType,
   MessageTypeandTextType,
-} from '@/@types/message.types';
-import type { UserType } from '@/@types/user.types';
-import { req } from '@/api/main';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+} from "@/@types/message.types";
+import type { UserType } from "@/@types/user.types";
+import { req } from "@/api/main";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import useMessages, {
   setFetching,
   setMessages,
   setMsgId,
-} from '@/store/messages.store';
-import HeaderUI from '../ui/header';
-import StatusIcon from '../ui/status-icon';
-import MessagesLayoutLogic from './message-logic.layout';
+} from "@/store/messages.store";
+import useSettings, { setContactOpen } from "@/store/settings.store";
+import AddUsersList from "../logic/add-user-list";
+import HeaderUI from "../ui/header";
+import StatusIcon from "../ui/status-icon";
+import MessagesLayoutLogic from "./message-logic.layout";
 
 type LayoutLinkPropsType = PropsWithChildren & {
   id: string;
@@ -29,7 +32,7 @@ const LayoutLink: FC<LayoutLinkPropsType> = ({ id, children }) => {
   return (
     // biome-ignore lint/a11y/useButtonType: is not ay ready button
     <button
-      className='flex gap-2 items-center p-1 cursor-pointer w-full'
+      className="flex gap-2 items-center p-1 cursor-pointer w-full"
       onClick={handleClick}
     >
       {children}
@@ -39,40 +42,36 @@ const LayoutLink: FC<LayoutLinkPropsType> = ({ id, children }) => {
 
 type MassageItemPropsType = {
   avatarUrl: string;
-  uName: string;
-  uid: UserType['_id'];
+  uname: string;
+  uid: UserType["_id"];
 } & MessageTypeandTextType &
-  Pick<MessageType, 'sender' | 'text' | 'status'>;
+  Pick<MessageType, "sender" | "text" | "status">;
 
 const MassageItem: FC<MassageItemPropsType> = ({
   avatarUrl,
-  uName,
+  uname,
   status,
   uid,
   // type,
-  sender: { _id: sid },
+  sender: { _id: sid } = {
+    _id: uid,
+  },
   text,
 }) => (
   <li>
     <LayoutLink id={uid}>
-      <Avatar className='size-10'>
+      <Avatar className="size-10">
         <AvatarImage src={avatarUrl} />
-        <AvatarFallback>{uName}</AvatarFallback>
+        <AvatarFallback>{uname}</AvatarFallback>
       </Avatar>
-      <div
-        className='grow'
-        role='presentation'
-      >
-        <h2 className='text-base font-semibold w-fit'>Army Man</h2>
-        <div
-          className='flex gap-1 items-center'
-          role='presentation'
-        >
-          <h3 className='line-clamp-1 text-start text-sm grow'>{text}</h3>
+      <div className="grow" role="presentation">
+        <h2 className="text-base font-semibold w-fit">{uname}</h2>
+        <div className="flex gap-1 items-center" role="presentation">
+          <h3 className="line-clamp-1 text-start text-sm grow">{text}</h3>
           {uid === sid ? null : (
             <StatusIcon
-              className={cn('size-5 p-0.5 shrink-0', {
-                'text-cyan-500': status === 'read',
+              className={cn("size-5 p-0.5 shrink-0", {
+                "text-cyan-500": status === "read",
               })}
               status={status}
             />
@@ -82,6 +81,12 @@ const MassageItem: FC<MassageItemPropsType> = ({
     </LayoutLink>
   </li>
 );
+
+const user = {
+  _id: "u-1",
+  avatarUrl: "/profile.gif",
+  uname: "username",
+} satisfies UserType;
 
 const MessagesList: FC = () => {
   const messages = useMessages((state) => state.messages);
@@ -95,14 +100,14 @@ const MessagesList: FC = () => {
       try {
         setFetching(true);
         const { messages } = await req<{ messages: MessageType[] }>(
-          'msg',
+          "msg",
           undefined,
           cont.signal
         );
 
         setMessages(messages);
       } catch (e) {
-        console.error('ERROR:', e);
+        console.error("ERROR:", e);
       } finally {
         setFetching(false);
       }
@@ -117,7 +122,7 @@ const MessagesList: FC = () => {
 
   if (isFetching) {
     // TODO!
-    return 'fetching';
+    return "fetching";
   }
 
   if (!messages) {
@@ -126,20 +131,38 @@ const MessagesList: FC = () => {
   }
 
   return (
-    <ul>
-      {messages.map(
-        ({ _id, user: { avatarUrl, uname, _id: uid }, ...props }) => (
+    <>
+      <ul>
+        {messages.map(({ _id, ...props }) => (
           <MassageItem
-            avatarUrl={avatarUrl}
+            avatarUrl={user.avatarUrl}
             key={_id}
-            uid={uid}
-            uName={uname}
+            uid={user._id}
+            uname={user.uname}
             {...props}
           />
-        )
-      )}
-    </ul>
+        ))}
+      </ul>
+      <Button
+        className="rounded-full cursor-pointer absolute right-5 bottom-5"
+        onClick={() => {
+          setContactOpen(true);
+        }}
+        size="icon-lg"
+        variant="outline"
+      >
+        <UserRoundPlus />
+      </Button>
+    </>
   );
+};
+
+const MessagesORUserList: FC = () => {
+  const isContactOpen = useSettings((state) => state.isContactOpen);
+  if (isContactOpen) {
+    return <AddUsersList />;
+  }
+  return <MessagesList />;
 };
 
 type MessagesLayoutPropsType = PropsWithChildren;
@@ -152,32 +175,28 @@ const MessagesLayout: FC<MessagesLayoutPropsType> = ({ children }) => {
       selected={selected}
       side={
         <div
-          className='w-full h-full md:basis-80 flex flex-col border-r'
-          role='presentation'
+          className="w-full h-full md:basis-80 flex flex-col border-r"
+          role="presentation"
         >
           <HeaderUI>
             <div
-              className='w-2/3 text-ring placeholder:text-muted-foreground rounded-md focus-within:border-ring flex gap-2 px-3 py-1 border-2 border-input'
-              role='presentation'
+              className="w-2/3 text-ring placeholder:text-muted-foreground rounded-md focus-within:border-ring flex gap-2 px-3 py-1 border-2 border-input"
+              role="presentation"
             >
               <Search />
               <input
-                className='outline-none w-full'
-                placeholder='Search Chat...'
+                className="outline-none w-full"
+                placeholder="Search Chat..."
               />
             </div>
           </HeaderUI>
-
-          <div
-            className='grow overflow-auto px-2'
-            role='presentation'
-          >
-            <MessagesList />
+          <div className="grow overflow-auto px-2 relative" role="presentation">
+            <MessagesORUserList />
           </div>
         </div>
       }
     >
-      <main className='grow h-full overflow-hidden'>{children}</main>
+      <main className="grow h-full overflow-hidden">{children}</main>
     </MessagesLayoutLogic>
   );
 };

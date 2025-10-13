@@ -47,6 +47,11 @@ const setMessages = (messages: MessageType[]) =>
     messages,
   });
 
+const addMessage = (message: MessageType) =>
+  set(({ messages }) => ({
+    messages: [...(messages || []), message],
+  }));
+
 export {
   setMsgId,
   setFetching,
@@ -54,6 +59,7 @@ export {
   openSetting,
   closeSetting,
   toggleSetting,
+  addMessage,
 };
 
 export default useMessages;
