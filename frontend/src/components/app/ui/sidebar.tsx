@@ -11,18 +11,15 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const avatarUrl = '/profile.gif',
-  uName = 'username';
+type SideBarUITabsKeysType = 'message' | 'group' | 'call' | 'setting';
 
-type SideBarTabsKeysType = 'message' | 'group' | 'call' | 'setting';
-
-type SideBarItemPropsType = PropsWithChildren<{
-  value: SideBarTabsKeysType;
+type SideBarUIItemPropsType = PropsWithChildren<{
+  value: SideBarUITabsKeysType;
   Icon: LucideIcon;
   lable: string;
 }>;
 
-const SideBarItem: FC<SideBarItemPropsType> = ({
+const SideBarUIItem: FC<SideBarUIItemPropsType> = ({
   children,
   Icon,
   lable,
@@ -49,35 +46,39 @@ const SideBarItem: FC<SideBarItemPropsType> = ({
   </TabsTrigger>
 );
 
-const SideBar: FC = () => (
+type SideBarUIPropsType = {
+  avatarUrl: string;
+  name: string;
+};
+const SideBarUI: FC<SideBarUIPropsType> = ({ avatarUrl, name }) => (
   <TabsList className='p-4 border-r flex flex-col gap-2 h-full rounded-none bg-transparent'>
     <Avatar className='size-10'>
       <AvatarImage src={avatarUrl} />
-      <AvatarFallback>{uName.at(1)}</AvatarFallback>
+      <AvatarFallback>{name.at(1)}</AvatarFallback>
     </Avatar>
 
     <nav className='flex flex-col grow space-y-4'>
-      <SideBarItem
+      <SideBarUIItem
         Icon={MessageCircleMore}
         lable='Message'
         value='message'
       />
-      <SideBarItem
+      <SideBarUIItem
         Icon={UsersRound}
         lable='Group'
         value='group'
       />
-      <SideBarItem
+      <SideBarUIItem
         Icon={Phone}
         lable='Call'
         value='call'
       >
         9+
-      </SideBarItem>
+      </SideBarUIItem>
     </nav>
 
     <Separator className='w-full' />
-    <SideBarItem
+    <SideBarUIItem
       Icon={Cog}
       lable='Setting'
       value='setting'
@@ -85,6 +86,6 @@ const SideBar: FC = () => (
   </TabsList>
 );
 
-export type { SideBarTabsKeysType };
+export type { SideBarUITabsKeysType };
 
-export default SideBar;
+export default SideBarUI;

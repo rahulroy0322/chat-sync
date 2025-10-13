@@ -1,13 +1,18 @@
 import { Search } from 'lucide-react';
-import { type FC, type PropsWithChildren, useCallback } from 'react';
+import { type FC, type PropsWithChildren, useCallback, useEffect } from 'react';
 import type {
   MessageType,
   MessageTypeandTextType,
 } from '@/@types/message.types';
 import type { UserType } from '@/@types/user.types';
+import { req } from '@/api/main';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import useMessages, { setMsgId } from '@/store/messages.store';
+import useMessages, {
+  setFetching,
+  setMessages,
+  setMsgId,
+} from '@/store/messages.store';
 import HeaderUI from '../ui/header';
 import StatusIcon from '../ui/status-icon';
 import MessagesLayoutLogic from './message-logic.layout';
@@ -78,54 +83,64 @@ const MassageItem: FC<MassageItemPropsType> = ({
   </li>
 );
 
-const user = {
-  _id: 'u-1',
-  avatarUrl: '/worker.gif',
-  uname: 'username',
-} satisfies UserType;
+const MessagesList: FC = () => {
+  const messages = useMessages((state) => state.messages);
 
-const user2 = {
-  ...user,
-  avatarUrl: '/worker.gif',
-  _id: 'u-2',
+  const isFetching = useMessages((state) => state.isFetching);
+
+  useEffect(() => {
+    const cont = new AbortController();
+
+    const getMessages = async () => {
+      try {
+        setFetching(true);
+        const { messages } = await req<{ messages: MessageType[] }>(
+          'msg',
+          undefined,
+          cont.signal
+        );
+
+        setMessages(messages);
+      } catch (e) {
+        console.error('ERROR:', e);
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    getMessages();
+
+    return () => {
+      cont.abort();
+    };
+  }, []);
+
+  if (isFetching) {
+    // TODO!
+    return 'fetching';
+  }
+
+  if (!messages) {
+    // TODO!
+    return null;
+  }
+
+  return (
+    <ul>
+      {messages.map(
+        ({ _id, user: { avatarUrl, uname, _id: uid }, ...props }) => (
+          <MassageItem
+            avatarUrl={avatarUrl}
+            key={_id}
+            uid={uid}
+            uName={uname}
+            {...props}
+          />
+        )
+      )}
+    </ul>
+  );
 };
-
-// const date = "2022-10-04T13:45:41.869Z";
-
-const messages = [
-  {
-    _id: 'msg-1',
-    sender: user2,
-    status: 'painding',
-    text: 'hi',
-    type: 'text',
-    user,
-  },
-  {
-    _id: 'msg-2',
-    sender: user2,
-    status: 'send',
-    text: 'hi',
-    type: 'text',
-    user,
-  },
-  {
-    _id: 'msg-3',
-    sender: user2,
-    status: 'riched',
-    text: 'hi',
-    type: 'text',
-    user,
-  },
-  {
-    _id: 'msg-4',
-    sender: user2,
-    status: 'read',
-    text: 'hi',
-    type: 'text',
-    user: user2,
-  },
-] satisfies MessageType[];
 
 type MessagesLayoutPropsType = PropsWithChildren;
 
@@ -157,19 +172,7 @@ const MessagesLayout: FC<MessagesLayoutPropsType> = ({ children }) => {
             className='grow overflow-auto px-2'
             role='presentation'
           >
-            <ul>
-              {messages.map(
-                ({ _id, user: { avatarUrl, uname, _id: uid }, ...props }) => (
-                  <MassageItem
-                    avatarUrl={avatarUrl}
-                    key={_id}
-                    uid={uid}
-                    uName={uname}
-                    {...props}
-                  />
-                )
-              )}
-            </ul>
+            <MessagesList />
           </div>
         </div>
       }

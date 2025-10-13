@@ -1,7 +1,6 @@
-import { io, type Socket } from "socket.io-client";
-import { create } from "zustand";
-
-const BASE_URL = "http://localhost:8000";
+import { io, type Socket } from 'socket.io-client';
+import { create } from 'zustand';
+import { BASE_URL } from '@/api/main';
 
 type UseSocketType = {
   io: Socket | null;
