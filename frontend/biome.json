@@ -38,7 +38,12 @@
         "noArrayIndexKey": "error",
         "noClassAssign": "error",
         "noConfusingLabels": "error",
-        "noConsole": "error",
+        "noConsole": {
+          "options": {
+            "allow": ["error", "warn"]
+          },
+          "level": "error"
+        },
         "noConstEnum": "error",
         "noDoubleEquals": "error",
         "noDuplicateAtImportRules": "error",
