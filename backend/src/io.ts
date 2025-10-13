@@ -1,16 +1,16 @@
-import { type DefaultEventsMap, Server, type Socket } from "socket.io";
-import http from "./http";
-import { getToken, type GetTokenPropsType } from "./utils/auth";
-import { verifyAccessToken } from "./services/jwt.service";
-import type { EventsMap } from "socket.io/dist/typed-events";
-import type { AccessTokenUserType } from "./@types/jwt.types";
-import { redis, setToRedis } from "./services/redis.service";
-import { REDIS } from "./constants/redis.constants";
-import { getSocketKey, getStatusKey, getUserKey, UTSK } from "./utils/io";
-import { formatJoiError, validateJoi } from "./utils/joi";
-import { contactsSchema, toSchema } from "./schemas/io.schema";
-import logger from "./logger/log";
-import type { ObjectSchema, ArraySchema, StringSchema } from "joi";
+import type { ArraySchema, ObjectSchema, StringSchema } from 'joi';
+import { type DefaultEventsMap, Server, type Socket } from 'socket.io';
+import type { EventsMap } from 'socket.io/dist/typed-events';
+import type { AccessTokenUserType } from './@types/jwt.types';
+import { REDIS } from './constants/redis.constants';
+import http from './http';
+import logger from './logger/log';
+import { contactsSchema, toSchema } from './schemas/io.schema';
+import { verifyAccessToken } from './services/jwt.service';
+import { redis, setToRedis } from './services/redis.service';
+import { type GetTokenPropsType, getToken } from './utils/auth';
+import { getSocketKey, getStatusKey, getUserKey, UTSK } from './utils/io';
+import { formatJoiError, validateJoi } from './utils/joi';
 
 const validateAndLog = <T>(
   schema: ObjectSchema<T> | ArraySchema<T> | StringSchema<T>,
@@ -45,31 +45,30 @@ const validateAndLog = <T>(
 
 const typing = (socket: Socket) => {
   let timer: ReturnType<typeof setTimeout>;
-  socket.on("typing:start", (to) => {
-    const res = validateAndLog(toSchema, to, "typing:start");
+  socket.on('typing:start', (to) => {
+    const res = validateAndLog(toSchema, to, 'typing:start');
 
     if (!res.success) {
       return;
     }
 
-    socket.to(res.value).emit("typing:start");
+    socket.to(res.value).emit('typing:start');
     if (timer) {
       clearTimeout(timer);
     }
     timer = setTimeout(() => {
-      socket.to(res.value).emit("typing:stop");
+      socket.to(res.value).emit('typing:stop');
       clearTimeout(timer);
     }, 1000);
   });
 
-  socket.on("typing:stop", (to) => {
-    const res = validateAndLog(toSchema, to, "typing:start");
+  socket.on('typing:stop', (to) => {
+    const res = validateAndLog(toSchema, to, 'typing:start');
 
     if (!res.success) {
       return;
     }
-    socket.to(res.value).emit("typing:stop");
-    console.log("stop");
+    socket.to(res.value).emit('typing:stop');
     if (timer) {
       clearTimeout(timer);
     }
@@ -85,13 +84,13 @@ const io = new Server<
   }
 >(http, {
   cors: {
-    origin: ["http://localhost:5173"], // Your frontend URL
-    methods: ["GET", "POST"],
+    origin: ['http://localhost:5173'],
+    methods: ['GET', 'POST'],
   },
 });
 
 io.use((socket, next) => {
-  const token = getToken(socket.handshake as GetTokenPropsType).split(" ")[1];
+  const token = getToken(socket.handshake as GetTokenPropsType).split(' ')[1];
 
   try {
     const { user } = verifyAccessToken(token);
@@ -108,8 +107,8 @@ io.use((socket, next) => {
   }
 });
 
-io.on("connection", async (socket) => {
-  console.log({ id: socket.id }, "connection");
+io.on('connection', async (socket) => {
+  logger.info({ id: socket.id }, 'connection');
   const user = socket.data.user;
 
   socket
@@ -118,15 +117,15 @@ io.on("connection", async (socket) => {
         userId: user.sub,
       })
     )
-    .emit("online", {
+    .emit('online', {
       userId: user.sub,
       socketId: socket.id,
     });
 
   typing(socket);
 
-  socket.on("contacts", async (contacts) => {
-    const res = validateAndLog(contactsSchema, contacts, "contacts");
+  socket.on('contacts', async (contacts) => {
+    const res = validateAndLog(contactsSchema, contacts, 'contacts');
 
     if (!res.success) {
       return;
@@ -143,7 +142,7 @@ io.on("connection", async (socket) => {
     });
 
     const data = (await redis.mget(contactsIds))
-      .filter((id) => typeof id === "string")
+      .filter((id) => typeof id === 'string')
       .map((value) => {
         const {
           key,
@@ -161,11 +160,11 @@ io.on("connection", async (socket) => {
         };
       });
 
-    socket.emit("contacts", data);
+    socket.emit('contacts', data);
   });
 
-  socket.on("chat", async (uid: string, chat) => {
-    const res = validateAndLog(toSchema, uid, "chat");
+  socket.on('chat', async (uid: string, chat) => {
+    const res = validateAndLog(toSchema, uid, 'chat');
 
     if (!res.success) {
       return;
@@ -185,15 +184,15 @@ io.on("connection", async (socket) => {
   await setToRedis(userKey, socket.id);
   await setToRedis(socketKey, user.sub);
 
-  socket.on("disconnect", async () => {
-    logger.info({ id: socket.id }, "disconnect");
+  socket.on('disconnect', async () => {
+    logger.info({ id: socket.id }, 'disconnect');
     socket
       .to(
         getStatusKey({
           userId: user.sub,
         })
       )
-      .emit("offline", {
+      .emit('offline', {
         userId: user.sub,
         socketId: socket.id,
       });

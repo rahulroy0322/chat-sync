@@ -4,22 +4,25 @@ import type {
   StringSchema,
   ValidationError,
   ValidationResult,
-} from "joi";
+} from 'joi';
 
 const formatJoiError = (e: ValidationError) =>
-  e.details.reduce((acc, { message, path: paths }) => {
-    paths.forEach((path) => {
-      let _val = acc[path];
+  e.details.reduce(
+    (acc, { message, path: paths }) => {
+      paths.forEach((path) => {
+        let _val = acc[path];
 
-      if (!_val) {
-        _val = acc[path] = [];
-      }
+        if (!_val) {
+          _val = acc[path] = [];
+        }
 
-      _val?.push(message);
-    });
+        _val?.push(message);
+      });
 
-    return acc;
-  }, {} as Record<string, string[]>);
+      return acc;
+    },
+    {} as Record<string, string[]>
+  );
 
 const validateJoi = <T>(
   schema: ObjectSchema<T> | ArraySchema<T> | StringSchema<T>,

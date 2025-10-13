@@ -1,14 +1,14 @@
+import { Router } from 'express';
 import {
-  getOrCreateMessagesController,
   getAllMessagesController,
-} from "../controllers/message.controller";
-import { authRequiredMiddleware } from "../middlewares/auth.middleware";
-import { Router } from "express";
+  getOrCreateMessagesController,
+} from '../controllers/message.controller';
+import { authRequiredMiddleware } from '../middlewares/auth.middleware';
 
 const messageRouter: Router = Router();
 
-messageRouter.get("/", authRequiredMiddleware, getAllMessagesController);
+messageRouter.get('/', authRequiredMiddleware, getAllMessagesController);
 
-messageRouter.post("/", authRequiredMiddleware, getOrCreateMessagesController);
+messageRouter.post('/', authRequiredMiddleware, getOrCreateMessagesController);
 
 export default messageRouter;

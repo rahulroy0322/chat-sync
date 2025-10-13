@@ -1,10 +1,10 @@
-import type { ModelType } from "./model.types";
-import type { UserType } from "./user.types";
+import type { ModelType } from './model.types';
+import type { UserType } from './user.types';
 
 type MSGType = {
   _id: string;
-  createdBy: UserType["_id"];
-  users: UserType["_id"][];
+  createdBy: UserType['_id'];
+  users: UserType['_id'][];
 };
 
 type CreateMsgSchemaType = {

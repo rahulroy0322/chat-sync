@@ -1,4 +1,4 @@
-import J from "joi";
+import J from 'joi';
 
 const contactsSchema = J.array().items(J.string()).required();
 const toSchema = J.string().required();

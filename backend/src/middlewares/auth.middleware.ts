@@ -1,14 +1,9 @@
-import type { Request, RequestHandler } from "express";
-import { UnauthorizedError } from "../error/app.error";
-import logger from "../logger/log";
-import { accessTokenUserSchema } from "../schemas/user.schema";
-import { formatJoiError, validateJoi } from "../utils/joi";
-import { verify } from "../utils/jwt";
-import { getToken, type GetTokenPropsType } from "../utils/auth";
-import { verifyAccessToken } from "../services/jwt.service";
+import type { RequestHandler } from 'express';
+import { verifyAccessToken, verifyRefreshToken } from '../services/jwt.service';
+import { type GetTokenPropsType, getToken } from '../utils/auth';
 
 const authRequiredMiddleware: RequestHandler = (req, _, next) => {
-  const token = getToken(req as GetTokenPropsType).split(" ")[1];
+  const token = getToken(req as GetTokenPropsType).split(' ')[1];
 
   const { user } = verifyAccessToken(token);
 
@@ -17,4 +12,14 @@ const authRequiredMiddleware: RequestHandler = (req, _, next) => {
   next();
 };
 
-export { authRequiredMiddleware };
+const refreshTokenRequiredMiddleware: RequestHandler = (req, _, next) => {
+  const token = getToken(req as GetTokenPropsType).split(' ')[1];
+
+  const { user } = verifyRefreshToken(token);
+
+  req.user = user;
+
+  next();
+};
+
+export { authRequiredMiddleware, refreshTokenRequiredMiddleware };

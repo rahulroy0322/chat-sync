@@ -1,4 +1,4 @@
-import type { ENVType } from "../constants/env.constants";
+import type { ENVType } from '../constants/env.constants';
 
 type EnvType = {
   PORT: number;

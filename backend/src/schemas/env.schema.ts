@@ -1,6 +1,6 @@
-import J from "joi";
-import type { EnvType } from "../@types/env.types";
-import { ENV_CONSTS } from "../constants/env.constants";
+import J from 'joi';
+import type { EnvType } from '../@types/env.types';
+import { ENV_CONSTS } from '../constants/env.constants';
 
 const envSchema = J.object<EnvType>({
   PORT: J.number().default(8000),

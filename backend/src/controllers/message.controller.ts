@@ -1,19 +1,19 @@
-import type { RequestHandler } from "express";
-import type { ResType } from "../@types/res.types";
-import { ServerError, ValueError } from "../error/app.error";
-import logger from "../logger/log";
-import { findMsgsByUId, findOrCreateMsg } from "../services/msg.service";
-import { userRequired } from "../utils/user";
-import { formatJoiError, validateJoi } from "../utils/joi";
-import { createMsgSchema } from "../schemas/msg.schema";
-import { STATUS } from "../constants/status.constants";
+import type { RequestHandler } from 'express';
+import type { ResType } from '../@types/res.types';
+import { STATUS } from '../constants/status.constants';
+import { ServerError, ValueError } from '../error/app.error';
+import logger from '../logger/log';
+import { createMsgSchema } from '../schemas/msg.schema';
+import { findMsgsByUId, findOrCreateMsg } from '../services/msg.service';
+import { formatJoiError, validateJoi } from '../utils/joi';
+import { userRequired } from '../utils/user';
 
 const getAllMessagesController: RequestHandler = async (req, res) => {
   const user = userRequired(req);
 
   const messages = await findMsgsByUId(user.sub);
 
-  if (!messages || "error" in messages) {
+  if (!messages || 'error' in messages) {
     logger.error(
       messages?.error,
       'ERROR finding msgs in "getAllMessagesController"'
@@ -37,19 +37,19 @@ const getOrCreateMessagesController: RequestHandler = async (req, res) => {
   if (warning) {
     logger.warn(
       formatJoiError(warning),
-      "WARNING in getOrCreateMessagesController!"
+      'WARNING in getOrCreateMessagesController!'
     );
   }
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, "ERROR!: in getOrCreateMessagesController");
+    console.error(_error, 'ERROR!: in getOrCreateMessagesController');
     throw new ValueError(error.message);
   }
 
   const data = await findOrCreateMsg(user.sub, value.uid);
 
-  if (!data || "error" in data) {
+  if (!data || 'error' in data) {
     logger.error(
       data?.error,
       'ERROR finding msgs in "getOrCreateMessagesController"'
@@ -57,7 +57,7 @@ const getOrCreateMessagesController: RequestHandler = async (req, res) => {
     throw new ServerError();
   }
 
-  res.status(data.status === "created" ? STATUS.CREATED : STATUS.OK).json({
+  res.status(data.status === 'created' ? STATUS.CREATED : STATUS.OK).json({
     success: true,
     data: {
       message: data.data,

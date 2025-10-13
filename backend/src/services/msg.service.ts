@@ -1,7 +1,7 @@
-import { Error as DbError, Types } from "mongoose";
-import type { DbResType } from "../@types/db.types";
-import type { MSGType } from "../@types/message.types";
-import Msg from "../models/message.model";
+import { Error as DbError, Types } from 'mongoose';
+import type { DbResType } from '../@types/db.types';
+import type { MSGType } from '../@types/message.types';
+import Msg from '../models/message.model';
 
 const findMsgByID = async (id: string): Promise<DbResType<MSGType, null>> => {
   try {
@@ -41,7 +41,7 @@ const findOrCreateMsg = async (
 ): Promise<
   DbResType<
     {
-      status: "created" | "find";
+      status: 'created' | 'find';
       data: MSGType | null;
     },
     null
@@ -64,7 +64,7 @@ const findOrCreateMsg = async (
       const msg = msgs[0]?.toJSON() as MSGType;
       if (msg) {
         return {
-          status: "find",
+          status: 'find',
           data: msg,
         };
       }
@@ -80,7 +80,7 @@ const findOrCreateMsg = async (
 
     if (msg) {
       return {
-        status: "created",
+        status: 'created',
         data: msg,
       };
     }
