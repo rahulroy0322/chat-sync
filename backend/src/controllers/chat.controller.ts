@@ -1,15 +1,15 @@
-import type { RequestHandler } from 'express';
-import type { ObjectSchema } from 'joi';
-import type { ChatType } from '../@types/chat.types';
-import type { ResType } from '../@types/res.types';
-import { STATUS } from '../constants/status.constants';
-import { ForbiddenError, NotFoundError, ValueError } from '../error/app.error';
-import logger from '../logger/log';
-import { createChatSchema } from '../schemas/chat.schema';
-import { createChat, findChatsByMsgId } from '../services/chat.service';
-import { findMsgByID } from '../services/msg.service';
-import { formatJoiError, validateJoi } from '../utils/joi';
-import { userRequired } from '../utils/user';
+import type { RequestHandler } from "express";
+import type { ObjectSchema } from "joi";
+import type { ChatType } from "../@types/chat.types";
+import type { ResType } from "../@types/res.types";
+import { STATUS } from "../constants/status.constants";
+import { ForbiddenError, NotFoundError, ValueError } from "../error/app.error";
+import logger from "../logger/log";
+import { createChatSchema } from "../schemas/chat.schema";
+import { createChat, findChatsByMsgId } from "../services/chat.service";
+import { findMsgByID, updateLastChat } from "../services/msg.service";
+import { formatJoiError, validateJoi } from "../utils/joi";
+import { userRequired } from "../utils/user";
 
 const createChatController: RequestHandler = async (req, res) => {
   const user = userRequired(req);
@@ -20,12 +20,12 @@ const createChatController: RequestHandler = async (req, res) => {
   );
 
   if (warning) {
-    logger.warn(formatJoiError(warning), 'WARNING in createChatController!');
+    logger.warn(formatJoiError(warning), "WARNING in createChatController!");
   }
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, 'ERROR!: in createChatController');
+    console.error(_error, "ERROR!: in createChatController");
     throw new ValueError(error.message);
   }
 
@@ -35,15 +35,15 @@ const createChatController: RequestHandler = async (req, res) => {
   const msg = await findMsgByID(msgId);
 
   if (!msg) {
-    throw new NotFoundError('Msg not found!');
+    throw new NotFoundError("Msg not found!");
   }
-  if ('error' in msg) {
+  if ("error" in msg) {
     logger.error(msg.error, 'ERROR finding msg in "createChatController"');
-    throw new NotFoundError('Msg not found!');
+    throw new NotFoundError("Msg not found!");
   }
 
   if (msg.users.every((uid) => uid.toString() !== user.sub)) {
-    throw new ForbiddenError('You are not in the chat!');
+    throw new ForbiddenError("You are not in the chat!");
   }
 
   const chat = await createChat({
@@ -53,17 +53,24 @@ const createChatController: RequestHandler = async (req, res) => {
   });
 
   if (!chat) {
-    throw new NotFoundError('something went wrong!');
+    throw new NotFoundError("something went wrong!");
   }
-  if ('error' in chat) {
+  if ("error" in chat) {
     logger.error(chat.error, 'ERROR creating chat in  "createChatController"');
-    throw new NotFoundError('some error happeden!');
+    throw new NotFoundError("some error happeden!");
   }
+
+  await updateLastChat(msgId, chat._id.toString());
 
   res.status(STATUS.CREATED).json({
     success: true,
     data: {
-      chat,
+      chat: {
+        ...chat,
+        sender: {
+          ...user,
+        },
+      },
     },
   } satisfies ResType);
 };
@@ -77,15 +84,15 @@ const getChatsByMsgIdController: RequestHandler = async (req, res) => {
   const msg = await findMsgByID(msgId);
 
   if (!msg) {
-    throw new NotFoundError('Msg not found!');
+    throw new NotFoundError("Msg not found!");
   }
-  if ('error' in msg) {
+  if ("error" in msg) {
     logger.error(msg.error, 'ERROR finding msg in "createChatController"');
-    throw new NotFoundError('Msg not found!');
+    throw new NotFoundError("Msg not found!");
   }
 
   if (!msg.users.some((uid) => uid.toString() === user.sub)) {
-    throw new ForbiddenError('You are not in the chat!');
+    throw new ForbiddenError("You are not in the chat!");
   }
 
   const chats = await findChatsByMsgId(msgId);

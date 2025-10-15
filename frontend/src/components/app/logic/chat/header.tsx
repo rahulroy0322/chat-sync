@@ -1,10 +1,11 @@
-'use client';
-import { type FC, useMemo } from 'react';
-import useMessages, { openSetting } from '@/store/messages.store';
-import useUser from '@/store/user.store';
-import ChatHeaderUI from '../../ui/chat/header';
+import { type FC, useMemo } from "react";
+import useMessages, { openSetting } from "@/store/messages.store";
+import useUser from "@/store/user.store";
+import ChatHeaderUI from "../../ui/chat/header";
+import useSocket from "@/store/io.store";
 
-const date = '2022-10-04T13:45:41.869Z';
+// TODO!
+const date = "2022-10-04T13:45:41.869Z";
 
 const useContact = () => {
   const user = useUser((state) => state.user);
@@ -34,10 +35,13 @@ const useContact = () => {
 
 const ChatHeader: FC = () => {
   const contact = useContact();
+  const onlineUsers = useSocket((state) => state.onlineUsers);
+
+  const isOnline = useMemo(() => {
+    return onlineUsers.has(contact?._id ?? "");
+  }, [contact?._id, onlineUsers.has]);
 
   const handleHeaderClick = () => {
-    // biome-ignore lint/suspicious/noConsole:  cjxanscxlkna
-    console.log('opening setting');
     openSetting();
   };
 
@@ -50,8 +54,9 @@ const ChatHeader: FC = () => {
     <ChatHeaderUI
       avatarUrl={avatarUrl}
       lastSeen={date}
-      name={uname}
       onClick={handleHeaderClick}
+      uname={uname}
+      isOnline={isOnline}
     />
   );
 };

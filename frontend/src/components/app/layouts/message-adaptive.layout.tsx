@@ -1,11 +1,18 @@
 import type { FC, ReactNode } from 'react';
-import { useIsMobile } from '@/hookes/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type MessagesLayoutImplPropsType = Readonly<{
   children: ReactNode;
   side: ReactNode;
   isRoot?: boolean;
 }>;
+
+type MessagesLayoutLogicPropsType = Omit<
+  MessagesLayoutImplPropsType,
+  'isRoot'
+> & {
+  selected: string | null;
+};
 
 const MessagesLayoutImpl: FC<MessagesLayoutImplPropsType> = ({
   children,
@@ -15,10 +22,7 @@ const MessagesLayoutImpl: FC<MessagesLayoutImplPropsType> = ({
   const isMobile = useIsMobile();
 
   if (isMobile) {
-    if (isRoot) {
-      return side;
-    }
-    return children;
+    return isRoot ? side : children;
   }
   return (
     <>
@@ -28,30 +32,17 @@ const MessagesLayoutImpl: FC<MessagesLayoutImplPropsType> = ({
   );
 };
 
-type MessagesLayoutLogicPropsType = Omit<
-  MessagesLayoutImplPropsType,
-  'isRoot'
-> & {
-  selected: null | string;
-};
-
 const MessagesLayoutLogic: FC<MessagesLayoutLogicPropsType> = ({
   children,
   side,
   selected,
-}) => {
-  if (!selected) {
-    return (
-      <MessagesLayoutImpl
-        isRoot
-        side={side}
-      >
-        {children}
-      </MessagesLayoutImpl>
-    );
-  }
-
-  return <MessagesLayoutImpl side={side}>{children}</MessagesLayoutImpl>;
-};
+}) => (
+  <MessagesLayoutImpl
+    isRoot={!selected}
+    side={side}
+  >
+    {children}
+  </MessagesLayoutImpl>
+);
 
 export default MessagesLayoutLogic;

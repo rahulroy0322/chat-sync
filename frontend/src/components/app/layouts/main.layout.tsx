@@ -7,9 +7,10 @@ import MessagesTab from '@/tabs/messages.tabs';
 import SettingsTab from '@/tabs/settings.tabs';
 import SideBar from '../logic/sidebar';
 import type { SideBarUITabsKeysType } from '../ui/sidebar';
+import Socket from '../logic/socket';
 
 const MainLayout: FC = () => {
-  const handleValueChange = (value: SideBarUITabsKeysType) => {
+  const handleValueChange = (value: string) => {
     if (value) {
       setMsgId(null);
     }
@@ -18,7 +19,7 @@ const MainLayout: FC = () => {
     <Tabs
       className='h-screen w-screen flex flex-row items-start gap-0'
       defaultValue={'message' satisfies SideBarUITabsKeysType}
-      onValueChange={handleValueChange as unknown as () => void}
+      onValueChange={handleValueChange}
       orientation='vertical'
     >
       <SideBar />
@@ -27,7 +28,7 @@ const MainLayout: FC = () => {
       <GroupTab />
       <CallTab />
       <SettingsTab />
-      {/* <Socket /> */}
+      <Socket />
     </Tabs>
   );
 };

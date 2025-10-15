@@ -2,13 +2,55 @@ import type { FC, ReactNode } from 'react';
 import type { ChatType, ChatTypeandTextType } from '@/@types/chat.types';
 import type { ChatStatusType } from '@/@types/status.types';
 import type { UserType } from '@/@types/user.types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Avatar from '@/components/app/ui/avatar';
 import { cn } from '@/lib/utils';
 import StatusIcon from '../status-icon';
 
 type ChatTimePropsType = {
   time: string;
 };
+
+type ChatBottomPropsType = {
+  time: string;
+  status: ChatStatusType;
+};
+
+type ChatUserNamePropsType = {
+  name: string;
+};
+
+type ChatContentTextPropsType = {
+  text: string;
+};
+
+type ChatAvatarPropsType = {
+  url: string;
+  name: string;
+};
+
+type ChatContentImgPropsType = {
+  src: string;
+  text: string | undefined;
+};
+type ChatContentPropsType = ChatTypeandTextType;
+
+type ChatOtherPropsType = Pick<UserType, 'uname' | 'avatarUrl'> & ChatType;
+
+type ChatIndicatorPropsType = {
+  isMe: boolean;
+};
+
+type ChatContentWrapperPropsType = {
+  isMe: boolean;
+  isFigure: boolean;
+  children: ReactNode;
+};
+
+type ChatItemUIPropsType = {
+  user: UserType;
+} & ChatType;
+
+type ChatWrapperPropsType = { children: ReactNode; isFigure: boolean };
 
 const { format } = Intl.DateTimeFormat(undefined, {
   timeStyle: 'short',
@@ -23,38 +65,23 @@ const ChatTime: FC<ChatTimePropsType> = ({ time }) => (
   </time>
 );
 
-type ChatBottomPropsType = {
-  time: string;
-  status: ChatStatusType;
-};
-
 const ChatBottom: FC<ChatBottomPropsType> = ({ time, status }) => (
   <div className='flex gap-1.5 items-center justify-end'>
     <ChatTime time={time} />
     <StatusIcon
-      className='text-muted-foreground'
+      className='size-4 text-muted-foreground'
       status={status}
     />
   </div>
 );
 
-type ChatUserNamePropsType = {
-  name: string;
-};
-
 const ChatUserName: FC<ChatUserNamePropsType> = ({ name }) => (
   <h2 className='font-semibold text-md leading-4'>{name}</h2>
 );
 
-type ChatContentTextPropsType = {
-  text: string;
-};
-
 const ChatContentText: FC<ChatContentTextPropsType> = ({ text }) => (
   <p className='text-sm font-medium text-balance'>{text}</p>
 );
-
-type ChatContentPropsType = ChatTypeandTextType;
 
 const ChatContent: FC<ChatContentPropsType> = ({
   text,
@@ -77,11 +104,6 @@ const ChatContent: FC<ChatContentPropsType> = ({
   return <ChatContentText text={text as string} />;
 };
 
-type ChatContentImgPropsType = {
-  src: string;
-  text: string | undefined;
-};
-
 const ChatContentImg: FC<ChatContentImgPropsType> = ({ text, src }) => (
   <figure className='space-y-1 pt-2'>
     <img
@@ -89,25 +111,23 @@ const ChatContentImg: FC<ChatContentImgPropsType> = ({ text, src }) => (
       className='rounded-xs aspect-video'
       src={src}
     />
-    <figcaption className='text-sm font-light tracking-tight'>
-      {text}
-    </figcaption>
+    {text ? (
+      <figcaption className='text-sm font-light tracking-tight'>
+        {text}
+      </figcaption>
+    ) : null}
   </figure>
 );
 
-type ChatAvatarPropsType = {
-  url: string;
-  name: string;
-};
-
 const ChatAvatar: FC<ChatAvatarPropsType> = ({ name, url }) => (
-  <Avatar className='size-8'>
-    <AvatarImage src={url} />
-    <AvatarFallback>{name.at(1)}</AvatarFallback>
-  </Avatar>
+  <Avatar
+    alt={name}
+    className='size-8'
+    url={url}
+    //! TODO
+    isOnline
+  />
 );
-
-type ChatOtherPropsType = Pick<UserType, 'uname' | 'avatarUrl'> & ChatType;
 
 const ChatOther: FC<ChatOtherPropsType> = ({
   avatarUrl,
@@ -116,12 +136,12 @@ const ChatOther: FC<ChatOtherPropsType> = ({
   status,
   ...props
 }) => (
-  <ChatWraper isFigure={props.type !== 'text'}>
+  <ChatWrapper isFigure={props.type !== 'text'}>
     <ChatAvatar
       name={uname}
       url={avatarUrl}
     />
-    <ChatContentWraper
+    <ChatContentWrapper
       isFigure={props.type !== 'text'}
       isMe={false}
     >
@@ -131,8 +151,8 @@ const ChatOther: FC<ChatOtherPropsType> = ({
         status={status}
         time={createdAt}
       />
-    </ChatContentWraper>
-  </ChatWraper>
+    </ChatContentWrapper>
+  </ChatWrapper>
 );
 
 const ChatMe: FC<ChatOtherPropsType> = ({
@@ -142,8 +162,8 @@ const ChatMe: FC<ChatOtherPropsType> = ({
   status,
   ...props
 }) => (
-  <ChatWraper isFigure={props.type !== 'text'}>
-    <ChatContentWraper
+  <ChatWrapper isFigure={props.type !== 'text'}>
+    <ChatContentWrapper
       isFigure={props.type !== 'text'}
       isMe
     >
@@ -152,17 +172,13 @@ const ChatMe: FC<ChatOtherPropsType> = ({
         status={status}
         time={createdAt}
       />
-    </ChatContentWraper>
+    </ChatContentWrapper>
     <ChatAvatar
       name={uname}
       url={avatarUrl}
     />
-  </ChatWraper>
+  </ChatWrapper>
 );
-
-type ChatIndicatorPropsType = {
-  isMe: boolean;
-};
 
 const ChatIndicator: FC<ChatIndicatorPropsType> = ({ isMe }) => (
   <div
@@ -177,13 +193,7 @@ const ChatIndicator: FC<ChatIndicatorPropsType> = ({ isMe }) => (
   />
 );
 
-type ChatContentWraperPropsType = {
-  isMe: boolean;
-  isFigure: boolean;
-  children: ReactNode;
-};
-
-const ChatContentWraper: FC<ChatContentWraperPropsType> = ({
+const ChatContentWrapper: FC<ChatContentWrapperPropsType> = ({
   isFigure,
   children,
   isMe,
@@ -205,9 +215,7 @@ const ChatContentWraper: FC<ChatContentWraperPropsType> = ({
   </div>
 );
 
-type ChatWraperPropsType = { children: ReactNode; isFigure: boolean };
-
-const ChatWraper: FC<ChatWraperPropsType> = ({ children, isFigure }) => (
+const ChatWrapper: FC<ChatWrapperPropsType> = ({ children, isFigure }) => (
   <div
     className={cn('flex items-end max-w-3/4 lg:max-w-3/5 gap-3.5 p-2', {
       'w-3/4 !max-w-sm': isFigure,
@@ -217,10 +225,6 @@ const ChatWraper: FC<ChatWraperPropsType> = ({ children, isFigure }) => (
     {children}
   </div>
 );
-
-type ChatItemUIPropsType = {
-  user: UserType;
-} & ChatType;
 
 const ChatItemUI: FC<ChatItemUIPropsType> = ({ user, sender, ...props }) => {
   const isMe = sender._id === user._id;

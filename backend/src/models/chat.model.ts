@@ -1,49 +1,48 @@
-import { model, Schema } from 'mongoose';
-import type { ChatModelType } from '../@types/chat.types';
+import { model, Schema } from "mongoose";
+import type {
+  ChatModelType,
+  ChatStatusType,
+  ChatTypeandTextType,
+} from "../@types/chat.types";
+import { models } from "./main";
 
 const ChatSchema = new Schema<ChatModelType>(
   {
-    // @ts-expect-error
-    sender: {
-      type: Schema.Types.ObjectId,
-      ref: 'user',
-      required: [true, 'Sender is required'],
-    },
     type: {
       type: String,
       enum: {
-        values: ['text', 'img', 'vid'],
-        message: '{VALUE} is not a valid type',
+        values: ["text", "img", "vid"] satisfies ChatTypeandTextType["type"][],
+        message: "{VALUE} is not a valid type",
       },
-      required: [true, 'Type is required'],
+      required: [true, "Type is required"],
     },
     text: {
       type: String,
       required: function () {
-        return (this.type as unknown as string) === 'text';
+        return this.type === "text";
       },
     },
     url: {
       type: String,
       required: function () {
         const type = this.type as unknown as string;
-        return type === 'img' || type === 'vid';
+        return type === "img" || type === "vid";
       },
       validate: {
         validator: (url: string) => {
           if (!url) return true;
           return /^https?:\/\/.+/.test(url);
         },
-        message: 'Invalid URL format',
+        message: "Invalid URL format",
       },
     },
     status: {
       type: String,
       enum: {
-        values: ['send', 'read', 'riched'],
-        message: '{VALUE} is not a valid status',
+        values: ["sent", "read", "reached"] satisfies ChatStatusType[],
+        message: "{VALUE} is not a valid status",
       },
-      default: 'send',
+      default: "sent",
     },
     editedAt: {
       type: Date,
@@ -52,9 +51,15 @@ const ChatSchema = new Schema<ChatModelType>(
     // @ts-expect-error
     msgId: {
       type: Schema.Types.ObjectId,
-      ref: 'message',
-      required: [true, 'Message ID is required'],
+      ref: models.msg,
+      required: [true, "Message ID is required"],
       index: true,
+    },
+    // @ts-expect-error
+    sender: {
+      type: Schema.Types.ObjectId,
+      ref: models.user,
+      required: [true, "Sender is required"],
     },
   },
   {
@@ -63,6 +68,6 @@ const ChatSchema = new Schema<ChatModelType>(
   }
 );
 
-const Chat = model<ChatModelType>('chat', ChatSchema);
+const Chat = model<ChatModelType>(models.chat, ChatSchema);
 
 export default Chat;

@@ -5,12 +5,13 @@ import { errorMiddleware } from './middlewares/error.middleware';
 import { requestInfoMiddleware } from './middlewares/info.middleware';
 import { notFoundMiddleware } from './middlewares/not-found.middleware';
 import apiRouter from './routes';
+import ENV from './config/env.config';
 
 const app: Express = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:5173'],
+    origin:ENV.FRONEND_URLS,
   })
 );
 app.use(json());

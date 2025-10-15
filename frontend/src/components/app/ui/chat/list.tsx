@@ -1,10 +1,10 @@
 import type { FC, ReactNode } from 'react';
 
-type ChatListUiPropsType = {
+type ChatListUIPropsType = {
   children: ReactNode;
 };
 
-const ChatListUI: FC<ChatListUiPropsType> = ({ children }) => (
+const ChatListUI: FC<ChatListUIPropsType> = ({ children }) => (
   <div
     className='grow overflow-auto flex flex-col'
     role='presentation'

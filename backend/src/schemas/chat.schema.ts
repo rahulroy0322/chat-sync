@@ -1,7 +1,7 @@
 import J from 'joi';
 import type { ChatStatusType, ChatType } from '../@types/chat.types';
 
-const statuses = ['send', 'read', 'riched'] satisfies ChatStatusType[];
+const statuses = ['sent', 'read', 'reached'] satisfies ChatStatusType[];
 
 const statusSchema = J.string<ChatStatusType[]>()
   .valid(...statuses)
@@ -11,7 +11,7 @@ const statusSchema = J.string<ChatStatusType[]>()
   });
 
 const baseChatSchema = {
-  status: statusSchema.default('send' satisfies ChatStatusType),
+  status: statusSchema.default('sent' satisfies ChatStatusType),
 };
 
 // Text message schema

@@ -1,5 +1,6 @@
 import { model, Schema } from 'mongoose';
 import type { UserModelType } from '../@types/user.types';
+import { models } from './main';
 
 const UserSchema = new Schema<UserModelType>(
   {
@@ -29,6 +30,6 @@ const UserSchema = new Schema<UserModelType>(
   }
 );
 
-const User = model<UserModelType>('user', UserSchema);
+const User = model<UserModelType>(models.user, UserSchema);
 
 export default User;

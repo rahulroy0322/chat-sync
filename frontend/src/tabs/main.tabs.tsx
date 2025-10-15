@@ -1,9 +1,9 @@
 import type { FC, ReactNode } from 'react';
-import type { SideBarTabsKeysType } from '@/components/app/ui/sidebar';
+import type { SideBarUITabsKeysType } from '@/components/app/ui/sidebar';
 import { TabsContent as TC } from '@/components/ui/tabs';
 
 type TabsContentPropsType = {
-  value: SideBarTabsKeysType;
+  value: SideBarUITabsKeysType;
   children: ReactNode;
 };
 

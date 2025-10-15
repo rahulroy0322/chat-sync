@@ -1,6 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { UserType } from '@/@types/user.types';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { UserType } from "@/@types/user.types";
+import { reqImpl } from "@/api/main";
 
 type UseUserType = {
   isLoading: boolean;
@@ -18,16 +19,16 @@ const useUser = create(
       refreshToken: null,
     }),
     {
-      name: 'auth',
-      partialize: (state) =>
-        ({ refreshToken: state.refreshToken }) as UseUserType,
+      name: "auth",
+      partialize: ({ refreshToken, user }) =>
+        ({ refreshToken, user } as UseUserType),
     }
   )
 );
 
 const { setState: set } = useUser;
 
-const setLoading = (isLoading: UseUserType['isLoading']) =>
+const setLoading = (isLoading: UseUserType["isLoading"]) =>
   set({
     isLoading,
   });
@@ -37,16 +38,61 @@ const setUser = (user: UserType) =>
     user,
   });
 
-const setToken = (token: UseUserType['token']) =>
+const setToken = (token: UseUserType["token"]) =>
   set({
     token,
   });
 
-const setRefreshToken = (refreshToken: UseUserType['refreshToken']) =>
+const setRefreshToken = (refreshToken: UseUserType["refreshToken"]) =>
   set({
     refreshToken,
   });
 
-export { setUser, setToken, setRefreshToken, setLoading };
+const login = async ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) => {
+  setLoading(true);
+
+  try {
+    const data = await reqImpl<{
+      user: UserType;
+      token: {
+        access: string;
+        refresh: string;
+      };
+    }>("auth/login", {
+      method: "POST",
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
+
+    if (!data.success) {
+      throw data.error;
+    }
+
+    const {
+      token: { access, refresh },
+      user,
+    } = data.data;
+
+    set({
+      refreshToken: refresh,
+      token: access,
+      user,
+    });
+  } catch (e) {
+    console.error("ERROR login:", e);
+  } finally {
+    setLoading(false);
+  }
+};
+
+export { setUser, setToken, setRefreshToken, setLoading, login };
 
 export default useUser;

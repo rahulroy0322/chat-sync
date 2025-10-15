@@ -2,7 +2,7 @@ import type { MSGType } from './message.types';
 import type { ModelType } from './model.types';
 import type { UserType } from './user.types';
 
-type ChatStatusType = 'send' | 'read' | 'riched';
+type ChatStatusType = 'sent' | 'read' | 'reached';
 
 type ChatTypeandTextType =
   | {

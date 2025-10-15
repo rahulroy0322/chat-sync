@@ -1,4 +1,3 @@
-'use client';
 import type { FC } from 'react';
 import type { ChatType } from '@/@types/chat.types';
 import type { UserType } from '@/@types/user.types';
@@ -10,7 +9,7 @@ type ChatItemPropsType = {
 
 // TODO!
 
-const ChatItem: FC<ChatItemPropsType> = ({ ...props }) => {
+const ChatItem: FC<ChatItemPropsType> = (props) => {
   return <ChatItemUI {...props} />;
 };
 

@@ -1,7 +1,27 @@
-import { Error as DbError, Types } from 'mongoose';
-import type { DbResType } from '../@types/db.types';
-import type { MSGType } from '../@types/message.types';
-import Msg from '../models/message.model';
+import {
+  Error as DbError,
+  type FilterQuery,
+  type ProjectionType,
+  type QueryOptions,
+  Types,
+} from "mongoose";
+import type { DbResType } from "../@types/db.types";
+import type { MSGType } from "../@types/message.types";
+import Msg from "../models/message.model";
+import type { ChatType } from "../@types/chat.types";
+import type { UserType } from "../@types/user.types";
+
+const findMsg = (
+  where: FilterQuery<MSGType>,
+  projection?: ProjectionType<MSGType>,
+  options?: QueryOptions<MSGType>
+) =>
+  Msg.find(where, projection, options).populate([
+    "users",
+    "lastChat",
+  ]) as unknown as Promise<
+    (MSGType & { lastChat: ChatType | null; users: UserType[] })[]
+  >;
 
 const findMsgByID = async (id: string): Promise<DbResType<MSGType, null>> => {
   try {
@@ -21,9 +41,9 @@ const findMsgsByUId = async (
   uid: string
 ): Promise<DbResType<MSGType[], null>> => {
   try {
-    return await Msg.find({
+    return await findMsg({
       users: new Types.ObjectId(uid),
-    }).populate(['users']);
+    });
   } catch (e) {
     if (e instanceof DbError) {
       return {
@@ -41,14 +61,14 @@ const findOrCreateMsg = async (
 ): Promise<
   DbResType<
     {
-      status: 'created' | 'find';
+      status: "created" | "find";
       data: MSGType | null;
     },
     null
   >
 > => {
   try {
-    const msgs = await Msg.find(
+    const msgs = await findMsg(
       {
         users: {
           $all: [new Types.ObjectId(uid), new Types.ObjectId(otherUid)],
@@ -61,10 +81,12 @@ const findOrCreateMsg = async (
     );
 
     if (msgs.length) {
-      const msg = msgs[0]?.toJSON() as MSGType;
+      const msg = (
+        msgs[0] as { toJSON: () => MSGType | null } | undefined
+      )?.toJSON();
       if (msg) {
         return {
-          status: 'find',
+          status: "find",
           data: msg,
         };
       }
@@ -80,7 +102,7 @@ const findOrCreateMsg = async (
 
     if (msg) {
       return {
-        status: 'created',
+        status: "created",
         data: msg,
       };
     }
@@ -95,4 +117,32 @@ const findOrCreateMsg = async (
   }
 };
 
-export { findMsgByID, findMsgsByUId, findOrCreateMsg };
+const updateLastChat = async (
+  msgId: string,
+  chatId: string
+): Promise<
+  DbResType<MSGType & { lastChat: ChatType | null; users: UserType[] }, null>
+> => {
+  try {
+    return (await Msg.findOneAndUpdate(
+      {
+        _id: msgId,
+      },
+      {
+        lastChat: chatId,
+      },
+      {
+        new: true,
+      }
+    ).populate(["users", "lastChat"])) as null;
+  } catch (e) {
+    if (e instanceof DbError) {
+      return {
+        error: e,
+      };
+    }
+    return null;
+  }
+};
+
+export { findMsgByID, findMsgsByUId, findOrCreateMsg ,updateLastChat};

@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import type { ChatType } from '@/@types/chat.types';
-import { req } from '@/api/main';
-import useUser from './user.store';
+import { create } from "zustand";
+import type { ChatType } from "@/@types/chat.types";
+import { req } from "@/api/main";
+import useUser from "./user.store";
 
 type UseChatsType = {
   chats: null | ChatType[];
@@ -22,6 +22,11 @@ const setChats = (chats: ChatType[]) =>
     chats,
   });
 
+const addChat = (chat: ChatType) =>
+  set(({ chats }) => ({
+    chats: [...(chats || []), chat],
+  }));
+
 const fetchChats = async (id: string) => {
   set({
     isLoading: true,
@@ -34,7 +39,7 @@ const fetchChats = async (id: string) => {
       chats,
     });
   } catch (e) {
-    console.error('ERROR:', e);
+    console.error("ERROR:", e);
   } finally {
     set({
       isLoading: false,
@@ -53,27 +58,28 @@ const sendChat = async (id: string, text: string) => {
   const date = new Date().toISOString();
 
   const data = {
-    _id: Math.random().toString().substring(0, 3).toString(),
+    _id: `temp-${date}-${Math.random()}`,
     attached: null,
     createdAt: date,
     editedAt: date,
-    status: 'painding',
+    status: "pending",
     text,
-    type: 'text',
+    type: "text",
     sender: user,
+    msgId: id,
   } satisfies ChatType;
 
   set({
-    chats: oldChats.concat(data),
+    chats: [...oldChats,data],
     isSending: true,
   });
 
   try {
     const { chat } = await req<{ chat: ChatType }>(`chat/msg/${id}`, {
-      method: 'POST',
+      method: "POST",
       body: {
-        ...data,
-        status: 'send',
+        type: "text",
+        text,
       },
     });
 
@@ -86,8 +92,18 @@ const sendChat = async (id: string, text: string) => {
         },
       ],
     });
+    return chat;
   } catch (e) {
-    console.error('ERROR:', e);
+    console.error("ERROR:", e);
+    set({
+      chats: [
+        ...oldChats,
+        {
+          ...data,
+          status: "failed",
+        },
+      ],
+    });
   } finally {
     set({
       isSending: false,
@@ -95,6 +111,6 @@ const sendChat = async (id: string, text: string) => {
   }
 };
 
-export { setChats, sendChat, fetchChats };
+export { addChat, setChats, sendChat, fetchChats };
 
 export default useChats;

@@ -5,24 +5,30 @@ import {
   Phone,
   UsersRound,
 } from 'lucide-react';
-import type { FC, PropsWithChildren } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { FC, ReactNode } from 'react';
+import Avatar from '@/components/app/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type SideBarUITabsKeysType = 'message' | 'group' | 'call' | 'setting';
 
-type SideBarUIItemPropsType = PropsWithChildren<{
+type SideBarUIItemPropsType = {
   value: SideBarUITabsKeysType;
   Icon: LucideIcon;
-  lable: string;
-}>;
+  label: string;
+  children?: ReactNode;
+};
+
+type SideBarUIPropsType = {
+  avatarUrl: string;
+  name: string;
+};
 
 const SideBarUIItem: FC<SideBarUIItemPropsType> = ({
   children,
   Icon,
-  lable,
+  label,
   value,
 }) => (
   <TabsTrigger
@@ -42,35 +48,33 @@ const SideBarUIItem: FC<SideBarUIItemPropsType> = ({
     ) : (
       <Icon className='size-5' />
     )}
-    <span className='text-sm capitalize font-normal'>{lable}</span>
+    <span className='text-sm capitalize font-normal'>{label}</span>
   </TabsTrigger>
 );
 
-type SideBarUIPropsType = {
-  avatarUrl: string;
-  name: string;
-};
 const SideBarUI: FC<SideBarUIPropsType> = ({ avatarUrl, name }) => (
   <TabsList className='p-4 border-r flex flex-col gap-2 h-full rounded-none bg-transparent'>
-    <Avatar className='size-10'>
-      <AvatarImage src={avatarUrl} />
-      <AvatarFallback>{name.at(1)}</AvatarFallback>
-    </Avatar>
+    <Avatar
+      alt={name}
+      className='size-10'
+      url={avatarUrl}
+      isOnline
+    />
 
     <nav className='flex flex-col grow space-y-4'>
       <SideBarUIItem
         Icon={MessageCircleMore}
-        lable='Message'
+        label='Message'
         value='message'
       />
       <SideBarUIItem
         Icon={UsersRound}
-        lable='Group'
+        label='Group'
         value='group'
       />
       <SideBarUIItem
         Icon={Phone}
-        lable='Call'
+        label='Call'
         value='call'
       >
         9+
@@ -80,7 +84,7 @@ const SideBarUI: FC<SideBarUIPropsType> = ({ avatarUrl, name }) => (
     <Separator className='w-full' />
     <SideBarUIItem
       Icon={Cog}
-      lable='Setting'
+      label='Setting'
       value='setting'
     />
   </TabsList>

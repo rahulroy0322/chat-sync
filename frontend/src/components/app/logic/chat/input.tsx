@@ -1,103 +1,102 @@
-'use client';
 import {
   CircleUserRound,
   File,
   LoaderPinwheel,
   Mic2,
   Send,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   type ChangeEvent,
   type FC,
   type KeyboardEvent,
   useMemo,
   useState,
-} from 'react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import useChats, { sendChat } from '@/store/chat.store';
-import useMessages from '@/store/messages.store';
+} from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import useChats, { sendChat } from "@/store/chat.store";
+import useMessages from "@/store/messages.store";
 import {
-  ChatInput2ndWraperUI,
-  ChatInputMainWraperUI,
+  ChatInputInnerWrapperUI,
+  ChatInputMainWrapperUI,
   ChatInputUI,
-} from '../../ui/chat/input';
+} from "../../ui/chat/input";
+import useUser from "@/store/user.store";
+import useSocket from "@/store/io.store";
 
 const ChatInput: FC = () => {
   const isLoading = useChats((state) => state.isLoading || state.isSending);
-  // biome-ignore lint/style/noNonNullAssertion: It will be there
-  const msgId = useMessages((state) => state.selectedMsg)!;
-  const [msg, setMsg] = useState('');
+  const user = useUser((state) => state.user);
+  const msgId = useMessages((state) => state.selectedMsg);
+  const messages = useMessages((state) => state.messages);
+  const io = useSocket((state) => state.io);
+  const [msg, setMsg] = useState("");
 
   const isSendDisabled = useMemo(() => {
     return !msg || isLoading;
   }, [isLoading, msg]);
 
-  const handleMsgSubmit = () => {
-    if (!msg.trim()) return;
-    sendChat(msgId, msg);
-    setMsg('');
+  const handleMsgSubmit = async () => {
+    if (!msg.trim() || !msgId) return;
+    setMsg("");
+    const chat = await sendChat(msgId, msg);
+    if (!user) {
+      return;
+    }
+    const uid = messages
+      ?.find((m) => m._id === msgId)
+      ?.users.find((u) => u._id !== user._id);
+    if (!uid) {
+      return;
+    }
+    io?.emit("chat", uid._id, chat);
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
     setMsg(e.target.value);
   };
 
-  const handleUp = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key.toString().toLowerCase() === 'enter') {
+  const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key.toString().toLowerCase() === "enter") {
       if (e.metaKey || e.ctrlKey) {
-        setMsg('');
+        setMsg("");
       }
       handleMsgSubmit();
     }
   };
 
   return (
-    <ChatInputMainWraperUI>
-      <ChatInput2ndWraperUI>
-        <Button
-          size='icon'
-          variant='input'
-        >
+    <ChatInputMainWrapperUI>
+      <ChatInputInnerWrapperUI>
+        <Button size="icon" variant="input">
           <File />
         </Button>
-        <ChatInputUI
-          onChange={handleInput}
-          onKeyUp={handleUp}
-          value={msg}
-        />
-        <Button
-          size='icon'
-          variant='input'
-        >
+        <ChatInputUI onChange={handleInput} onKeyUp={handleKeyUp} value={msg} />
+        <Button size="icon" variant="input">
           <CircleUserRound />
         </Button>
 
-        <Button
-          disabled
-          size='icon'
-          variant='input'
-        >
+        <Button disabled size="icon" variant="input">
           <Mic2 />
         </Button>
-      </ChatInput2ndWraperUI>
+      </ChatInputInnerWrapperUI>
 
       <Button
         className={cn({
-          'text-primary': !isSendDisabled,
+          "text-primary": !isSendDisabled,
         })}
         disabled={isSendDisabled}
         onClick={handleMsgSubmit}
-        size='icon'
-        variant='input'
+        size="icon"
+        variant="input"
       >
         {isLoading ? (
-          <LoaderPinwheel className='animate-spin animation-duration-[750ms]' />
+          <LoaderPinwheel className="animate-spin animation-duration-[750ms]" />
         ) : (
           <Send />
         )}
       </Button>
-    </ChatInputMainWraperUI>
+    </ChatInputMainWrapperUI>
   );
 };
 
