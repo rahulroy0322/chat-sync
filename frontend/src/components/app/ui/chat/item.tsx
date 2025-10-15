@@ -123,9 +123,9 @@ const ChatAvatar: FC<ChatAvatarPropsType> = ({ name, url }) => (
   <Avatar
     alt={name}
     className='size-8'
-    url={url}
-    //! TODO
     isOnline
+    //! TODO
+    url={url}
   />
 );
 

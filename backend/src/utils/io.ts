@@ -7,6 +7,4 @@ const getUserKey = (uid: string) => `${UTSK}${uid}`;
 
 const getSocketKey = (sid: string) => `${STUK}${sid}`;
 
-const getStatusKey = ({ userId }: { userId: string }) => `x-status-${userId}`;
-
-export { getSocketKey, getUserKey, getStatusKey, STUK, UTSK };
+export { getSocketKey, getUserKey, STUK, UTSK };

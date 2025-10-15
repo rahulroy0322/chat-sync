@@ -1,6 +1,6 @@
-import { io, type Socket } from "socket.io-client";
-import { create } from "zustand";
-import { BASE_URL } from "@/api/main";
+import { io, type Socket } from 'socket.io-client';
+import { create } from 'zustand';
+import { BASE_URL } from '@/api/main';
 
 type UseSocketType = {
   io: Socket | null;
@@ -20,7 +20,7 @@ const addOnlineUser = (uid: string) =>
     oldSet.add(uid);
 
     return {
-      onlineUsers: new Set(oldSet)
+      onlineUsers: new Set(oldSet),
     };
   });
 
@@ -28,12 +28,11 @@ const removeOnlineUser = (uid: string) =>
   set(() => {
     const oldSet = get().onlineUsers;
     oldSet.delete(uid);
-    
+
     return {
-      onlineUsers: new Set(oldSet)
+      onlineUsers: new Set(oldSet),
     };
   });
-
 
 const closeIO = () => {
   const socket = get().io;

@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { UserType } from "@/@types/user.types";
-import { reqImpl } from "@/api/main";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { UserType } from '@/@types/user.types';
+import { reqImpl } from '@/api/main';
 
 type UseUserType = {
   isLoading: boolean;
@@ -19,16 +19,16 @@ const useUser = create(
       refreshToken: null,
     }),
     {
-      name: "auth",
+      name: 'auth',
       partialize: ({ refreshToken, user }) =>
-        ({ refreshToken, user } as UseUserType),
+        ({ refreshToken, user }) as UseUserType,
     }
   )
 );
 
 const { setState: set } = useUser;
 
-const setLoading = (isLoading: UseUserType["isLoading"]) =>
+const setLoading = (isLoading: UseUserType['isLoading']) =>
   set({
     isLoading,
   });
@@ -38,12 +38,12 @@ const setUser = (user: UserType) =>
     user,
   });
 
-const setToken = (token: UseUserType["token"]) =>
+const setToken = (token: UseUserType['token']) =>
   set({
     token,
   });
 
-const setRefreshToken = (refreshToken: UseUserType["refreshToken"]) =>
+const setRefreshToken = (refreshToken: UseUserType['refreshToken']) =>
   set({
     refreshToken,
   });
@@ -64,8 +64,8 @@ const login = async ({
         access: string;
         refresh: string;
       };
-    }>("auth/login", {
-      method: "POST",
+    }>('auth/login', {
+      method: 'POST',
       body: JSON.stringify({
         email,
         password,
@@ -87,7 +87,7 @@ const login = async ({
       user,
     });
   } catch (e) {
-    console.error("ERROR login:", e);
+    console.error('ERROR login:', e);
   } finally {
     setLoading(false);
   }

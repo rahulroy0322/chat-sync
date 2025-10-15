@@ -1,27 +1,27 @@
-import { UserRoundPlus } from "lucide-react";
+import { UserRoundPlus } from 'lucide-react';
 import {
   type FC,
   type PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
-} from "react";
-import type { MessageType } from "@/@types/message.types";
-import { req } from "@/api/main";
-import Avatar from "@/components/app/ui/avatar";
-import { Button } from "@/components/ui/button";
+} from 'react';
+import type { MessageType } from '@/@types/message.types';
+import { req } from '@/api/main';
+import Avatar from '@/components/app/ui/avatar';
+import { Button } from '@/components/ui/button';
+import useSocket from '@/store/io.store';
 import useMessages, {
   setFetching,
   setMessages,
   setMsgId,
-} from "@/store/messages.store";
-import useSettings, { setContactOpen } from "@/store/settings.store";
-import useUser from "@/store/user.store";
-import AddUsersList from "../logic/new-message";
-import SearchHeaderUI from "../ui/messages/search-header";
-import StatusIcon from "../ui/status-icon";
-import MessagesLayoutLogic from "./message-adaptive.layout";
-import useSocket from "@/store/io.store";
+} from '@/store/messages.store';
+import useSettings, { setContactOpen } from '@/store/settings.store';
+import useUser from '@/store/user.store';
+import AddUsersList from '../logic/new-message';
+import SearchHeaderUI from '../ui/messages/search-header';
+import StatusIcon from '../ui/status-icon';
+import MessagesLayoutLogic from './message-adaptive.layout';
 
 type LayoutLinkPropsType = PropsWithChildren & {
   id: string;
@@ -40,9 +40,9 @@ const LayoutLink: FC<LayoutLinkPropsType> = ({ id, children }) => {
 
   return (
     <button
-      className="flex gap-2 items-center p-1 cursor-pointer w-full"
+      className='flex gap-2 items-center p-1 cursor-pointer w-full'
       onClick={handleClick}
-      type="button"
+      type='button'
     >
       {children}
     </button>
@@ -73,20 +73,26 @@ const MessageItem: FC<MessageItemPropsType> = ({
       <LayoutLink id={_id}>
         <Avatar
           alt={uname}
-          className="size-10"
-          url={avatarUrl}
+          className='size-10'
           isOnline={isOnline}
+          url={avatarUrl}
         />
-        <div className="grow" role="presentation">
-          <h2 className="text-base font-semibold w-fit">{uname}</h2>
+        <div
+          className='grow'
+          role='presentation'
+        >
+          <h2 className='text-base font-semibold w-fit'>{uname}</h2>
           {lastChat ? (
-            <div className="flex gap-1 items-center" role="presentation">
-              <h3 className="line-clamp-1 text-start text-sm grow">
+            <div
+              className='flex gap-1 items-center'
+              role='presentation'
+            >
+              <h3 className='line-clamp-1 text-start text-sm grow'>
                 {lastChat.text}
               </h3>
               {uid !== user?._id ? null : (
                 <StatusIcon
-                  className="size-5 p-0.5 shrink-0"
+                  className='size-5 p-0.5 shrink-0'
                   status={lastChat.status}
                 />
               )}
@@ -113,14 +119,14 @@ const MessagesList: FC = () => {
       try {
         setFetching(true);
         const { messages } = await req<{ messages: MessageType[] }>(
-          "msg",
+          'msg',
           undefined,
           controller.signal
         );
 
         setMessages(messages);
       } catch (e) {
-        console.error("ERROR:", e);
+        console.error('ERROR:', e);
       } finally {
         setFetching(false);
       }
@@ -135,7 +141,7 @@ const MessagesList: FC = () => {
 
   if (isFetching) {
     // TODO!
-    return "fetching";
+    return 'fetching';
   }
 
   if (!messages || !user) {
@@ -151,18 +157,18 @@ const MessagesList: FC = () => {
             key={msg._id}
             {...msg}
             isOnline={onlineUsers.has(
-              msg.users.find((u) => u._id !== user._id)?._id ?? ""
+              msg.users.find((u) => u._id !== user._id)?._id ?? ''
             )}
           />
         ))}
       </ul>
       <Button
-        className="rounded-full cursor-pointer absolute right-5 bottom-5"
+        className='rounded-full cursor-pointer absolute right-5 bottom-5'
         onClick={() => {
           setContactOpen(true);
         }}
-        size="icon-lg"
-        variant="outline"
+        size='icon-lg'
+        variant='outline'
       >
         <UserRoundPlus />
       </Button>
@@ -186,17 +192,20 @@ const MessagesLayout: FC<MessagesLayoutPropsType> = ({ children }) => {
       selected={selected}
       side={
         <div
-          className="w-full h-full md:basis-80 flex flex-col border-r"
-          role="presentation"
+          className='w-full h-full md:basis-80 flex flex-col border-r'
+          role='presentation'
         >
           <SearchHeaderUI />
-          <div className="grow overflow-auto px-2 relative" role="presentation">
+          <div
+            className='grow overflow-auto px-2 relative'
+            role='presentation'
+          >
             <MessagesOrUserList />
           </div>
         </div>
       }
     >
-      <main className="grow h-full overflow-hidden">{children}</main>
+      <main className='grow h-full overflow-hidden'>{children}</main>
     </MessagesLayoutLogic>
   );
 };

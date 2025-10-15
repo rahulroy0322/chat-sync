@@ -57,8 +57,8 @@ const SideBarUI: FC<SideBarUIPropsType> = ({ avatarUrl, name }) => (
     <Avatar
       alt={name}
       className='size-10'
-      url={avatarUrl}
       isOnline
+      url={avatarUrl}
     />
 
     <nav className='flex flex-col grow space-y-4'>

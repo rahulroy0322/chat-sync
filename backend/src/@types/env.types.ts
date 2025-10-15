@@ -6,7 +6,7 @@ type EnvType = {
   MONGO_URI: string;
   REDIS_URI: string;
   JWT_SECRET: string;
-  FRONEND_URLS: string[]
+  FRONEND_URLS: string[];
 };
 
 export type { EnvType };

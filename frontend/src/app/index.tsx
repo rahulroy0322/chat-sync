@@ -1,8 +1,8 @@
-import { type FC, useEffect } from "react";
-import { refreshToken } from "@/api/auth";
-import MainLayout from "@/components/app/layouts/main.layout";
-import useUser, { setLoading } from "@/store/user.store";
-import AuthPage from "@/pages/auth.page";
+import { type FC, useEffect } from 'react';
+import { refreshToken } from '@/api/auth';
+import MainLayout from '@/components/app/layouts/main.layout';
+import AuthPage from '@/pages/auth.page';
+import useUser, { setLoading } from '@/store/user.store';
 
 const App: FC = () => {
   const user = useUser((state) => state.user);
@@ -16,7 +16,7 @@ const App: FC = () => {
         setLoading(true);
         await refreshToken(cont.signal);
       } catch (e) {
-        console.error("ERROR:", e);
+        console.error('ERROR:', e);
       } finally {
         setLoading(false);
       }
@@ -32,7 +32,7 @@ const App: FC = () => {
 
   if (isLoading) {
     // ? TODO
-    return "loading...";
+    return 'loading...';
   }
 
   if (!user) {

@@ -6,8 +6,8 @@ import GroupTab from '@/tabs/group.tabs';
 import MessagesTab from '@/tabs/messages.tabs';
 import SettingsTab from '@/tabs/settings.tabs';
 import SideBar from '../logic/sidebar';
-import type { SideBarUITabsKeysType } from '../ui/sidebar';
 import Socket from '../logic/socket';
+import type { SideBarUITabsKeysType } from '../ui/sidebar';
 
 const MainLayout: FC = () => {
   const handleValueChange = (value: string) => {

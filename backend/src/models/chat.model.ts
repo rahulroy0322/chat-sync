@@ -1,48 +1,48 @@
-import { model, Schema } from "mongoose";
+import { model, Schema } from 'mongoose';
 import type {
   ChatModelType,
   ChatStatusType,
   ChatTypeandTextType,
-} from "../@types/chat.types";
-import { models } from "./main";
+} from '../@types/chat.types';
+import { models } from './main';
 
 const ChatSchema = new Schema<ChatModelType>(
   {
     type: {
       type: String,
       enum: {
-        values: ["text", "img", "vid"] satisfies ChatTypeandTextType["type"][],
-        message: "{VALUE} is not a valid type",
+        values: ['text', 'img', 'vid'] satisfies ChatTypeandTextType['type'][],
+        message: '{VALUE} is not a valid type',
       },
-      required: [true, "Type is required"],
+      required: [true, 'Type is required'],
     },
     text: {
       type: String,
       required: function () {
-        return this.type === "text";
+        return this.type === 'text';
       },
     },
     url: {
       type: String,
       required: function () {
         const type = this.type as unknown as string;
-        return type === "img" || type === "vid";
+        return type === 'img' || type === 'vid';
       },
       validate: {
         validator: (url: string) => {
           if (!url) return true;
           return /^https?:\/\/.+/.test(url);
         },
-        message: "Invalid URL format",
+        message: 'Invalid URL format',
       },
     },
     status: {
       type: String,
       enum: {
-        values: ["sent", "read", "reached"] satisfies ChatStatusType[],
-        message: "{VALUE} is not a valid status",
+        values: ['sent', 'read', 'reached'] satisfies ChatStatusType[],
+        message: '{VALUE} is not a valid status',
       },
-      default: "sent",
+      default: 'sent',
     },
     editedAt: {
       type: Date,
@@ -52,14 +52,14 @@ const ChatSchema = new Schema<ChatModelType>(
     msgId: {
       type: Schema.Types.ObjectId,
       ref: models.msg,
-      required: [true, "Message ID is required"],
+      required: [true, 'Message ID is required'],
       index: true,
     },
     // @ts-expect-error
     sender: {
       type: Schema.Types.ObjectId,
       ref: models.user,
-      required: [true, "Sender is required"],
+      required: [true, 'Sender is required'],
     },
   },
   {

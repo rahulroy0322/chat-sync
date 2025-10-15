@@ -1,17 +1,17 @@
 import cors from 'cors';
 import express, { type Express, json, urlencoded } from 'express';
 import type { AccessTokenUserType } from './@types/jwt.types';
+import ENV from './config/env.config';
 import { errorMiddleware } from './middlewares/error.middleware';
 import { requestInfoMiddleware } from './middlewares/info.middleware';
 import { notFoundMiddleware } from './middlewares/not-found.middleware';
 import apiRouter from './routes';
-import ENV from './config/env.config';
 
 const app: Express = express();
 
 app.use(
   cors({
-    origin:ENV.FRONEND_URLS,
+    origin: ENV.FRONEND_URLS,
   })
 );
 app.use(json());

@@ -1,25 +1,29 @@
-import { Button } from "@/components/ui/button";
-import { login } from "@/store/user.store";
 import {
-  useRef,
   type ComponentProps,
   type FC,
   type FormEvent,
   type RefObject,
-} from "react";
+  useRef,
+} from 'react';
+import { Button } from '@/components/ui/button';
+import { login } from '@/store/user.store';
 
 type FieldPropsType = {
   label: string;
   placeholder: string;
-  type: "password" | "email" | "text";
+  type: 'password' | 'email' | 'text';
   name: string;
   ref: RefObject<HTMLInputElement | null>;
-} & ComponentProps<"input">;
+} & ComponentProps<'input'>;
 
 const Field: FC<FieldPropsType> = ({ label, ...props }) => (
-  <label className="flex items-center gap-2">
+  <label className='flex items-center gap-2'>
     <b>{label} : </b>
-    <input {...props} className="border-b outline-none px-2" required />
+    <input
+      {...props}
+      className='border-b outline-none px-2'
+      required
+    />
   </label>
 );
 
@@ -43,30 +47,30 @@ const AuthPage: FC = () => {
 
   return (
     <div
-      className="grow h-screen flex flex-col justify-center items-center overflow-hidden"
-      role="presentation"
+      className='grow h-screen flex flex-col justify-center items-center overflow-hidden'
+      role='presentation'
     >
       <form
+        className='border border-primary flex flex-col gap-2 p-4'
         onSubmit={handleSubmit}
-        className="border border-primary flex flex-col gap-2 p-4"
       >
         <Field
+          defaultValue='raat@example.com'
+          label='Email'
+          name='email'
+          placeholder='jhon@example.com'
           ref={emailRef}
-          label="Email"
-          type="email"
-          name="email"
-          defaultValue="raat@example.com"
-          placeholder="jhon@example.com"
+          type='email'
         />
         <Field
+          defaultValue='RAat@@101'
+          label='Password'
+          name='password'
+          placeholder={'*'.repeat(8)}
           ref={passwordRef}
-          label="Password"
-          type="text"
-          name="password"
-          defaultValue="RAat@@101"
-          placeholder={"*".repeat(8)}
+          type='text'
         />
-        <Button type="submit">Login</Button>
+        <Button type='submit'>Login</Button>
       </form>
     </div>
   );

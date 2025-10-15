@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import type { ChatType } from "@/@types/chat.types";
-import { req } from "@/api/main";
-import useUser from "./user.store";
+import { create } from 'zustand';
+import type { ChatType } from '@/@types/chat.types';
+import { req } from '@/api/main';
+import useUser from './user.store';
 
 type UseChatsType = {
   chats: null | ChatType[];
@@ -39,7 +39,7 @@ const fetchChats = async (id: string) => {
       chats,
     });
   } catch (e) {
-    console.error("ERROR:", e);
+    console.error('ERROR:', e);
   } finally {
     set({
       isLoading: false,
@@ -62,23 +62,23 @@ const sendChat = async (id: string, text: string) => {
     attached: null,
     createdAt: date,
     editedAt: date,
-    status: "pending",
+    status: 'pending',
     text,
-    type: "text",
+    type: 'text',
     sender: user,
     msgId: id,
   } satisfies ChatType;
 
   set({
-    chats: [...oldChats,data],
+    chats: [...oldChats, data],
     isSending: true,
   });
 
   try {
     const { chat } = await req<{ chat: ChatType }>(`chat/msg/${id}`, {
-      method: "POST",
+      method: 'POST',
       body: {
-        type: "text",
+        type: 'text',
         text,
       },
     });
@@ -94,13 +94,13 @@ const sendChat = async (id: string, text: string) => {
     });
     return chat;
   } catch (e) {
-    console.error("ERROR:", e);
+    console.error('ERROR:', e);
     set({
       chats: [
         ...oldChats,
         {
           ...data,
-          status: "failed",
+          status: 'failed',
         },
       ],
     });

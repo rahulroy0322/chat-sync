@@ -1,11 +1,11 @@
-import { type FC, useMemo } from "react";
-import useMessages, { openSetting } from "@/store/messages.store";
-import useUser from "@/store/user.store";
-import ChatHeaderUI from "../../ui/chat/header";
-import useSocket from "@/store/io.store";
+import { type FC, useMemo } from 'react';
+import useSocket from '@/store/io.store';
+import useMessages, { openSetting } from '@/store/messages.store';
+import useUser from '@/store/user.store';
+import ChatHeaderUI from '../../ui/chat/header';
 
 // TODO!
-const date = "2022-10-04T13:45:41.869Z";
+const date = '2022-10-04T13:45:41.869Z';
 
 const useContact = () => {
   const user = useUser((state) => state.user);
@@ -38,7 +38,7 @@ const ChatHeader: FC = () => {
   const onlineUsers = useSocket((state) => state.onlineUsers);
 
   const isOnline = useMemo(() => {
-    return onlineUsers.has(contact?._id ?? "");
+    return onlineUsers.has(contact?._id ?? '');
   }, [contact?._id, onlineUsers.has]);
 
   const handleHeaderClick = () => {
@@ -53,10 +53,10 @@ const ChatHeader: FC = () => {
   return (
     <ChatHeaderUI
       avatarUrl={avatarUrl}
+      isOnline={isOnline}
       lastSeen={date}
       onClick={handleHeaderClick}
       uname={uname}
-      isOnline={isOnline}
     />
   );
 };

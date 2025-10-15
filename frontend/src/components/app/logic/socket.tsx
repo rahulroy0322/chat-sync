@@ -1,17 +1,17 @@
-import { type FC, useEffect, useMemo } from "react";
+import { type FC, useEffect, useMemo } from 'react';
+import type { ChatType } from '@/@types/chat.types';
+import type { UserType } from '@/@types/user.types';
+import { addChat } from '@/store/chat.store';
 import useSocket, {
   addOnlineUser,
   connectIO,
   removeOnlineUser,
-} from "@/store/io.store";
-import useUser from "@/store/user.store";
-import type { UserType } from "@/@types/user.types";
-import useMessages from "@/store/messages.store";
-import type { ChatType } from "@/@types/chat.types";
-import { addChat } from "@/store/chat.store";
+} from '@/store/io.store';
+import useMessages from '@/store/messages.store';
+import useUser from '@/store/user.store';
 
 const handleError = (e: unknown) => {
-  console.error("Socket connection error:", e);
+  console.error('Socket connection error:', e);
 };
 
 const Socket: FC = () => {
@@ -47,15 +47,15 @@ const Socket: FC = () => {
   }, [token, io]);
 
   useEffect(() => {
-    io?.on("connect_error", handleError);
+    io?.on('connect_error', handleError);
 
     return () => {
-      io?.off("connect_error", handleError);
+      io?.off('connect_error', handleError);
     };
   }, [io]);
 
   useEffect(() => {
-    io?.emit("contacts", contacts);
+    io?.emit('contacts', contacts);
   }, [io, contacts]);
 
   useEffect(() => {
@@ -65,27 +65,27 @@ const Socket: FC = () => {
       }
     };
 
-    io?.on("chat", onChat);
+    io?.on('chat', onChat);
 
     return () => {
-      io?.off("chat", onChat);
+      io?.off('chat', onChat);
     };
   }, [io, selectedMsg]);
 
   useEffect(() => {
-    const handleOnlineUser = ({ userId }: { userId: UserType["_id"] }) => {
+    const handleOnlineUser = ({ userId }: { userId: UserType['_id'] }) => {
       addOnlineUser(userId);
     };
-    const handleOfflineUser = ({ userId }: { userId: UserType["_id"] }) => {
+    const handleOfflineUser = ({ userId }: { userId: UserType['_id'] }) => {
       removeOnlineUser(userId);
     };
 
-    io?.on("online", handleOnlineUser);
-    io?.on("offline", handleOfflineUser);
+    io?.on('online', handleOnlineUser);
+    io?.on('offline', handleOfflineUser);
 
     return () => {
-      io?.off("online", handleOnlineUser);
-      io?.off("offline", handleOfflineUser);
+      io?.off('online', handleOnlineUser);
+      io?.off('offline', handleOfflineUser);
     };
   }, [io]);
 

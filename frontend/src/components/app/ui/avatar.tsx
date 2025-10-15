@@ -1,10 +1,10 @@
-import type { ComponentProps, FC } from "react";
+import type { ComponentProps, FC } from 'react';
 import {
   Avatar as A,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 type AvatarPropsType = {
   url: string;
@@ -20,16 +20,16 @@ const Avatar: FC<AvatarPropsType> = ({
   ...props
 }) => (
   <A
-    role="button"
+    role='button'
     {...props}
     className={cn(
-      "border border-transparent",
-      { "border-teal-500": isOnline },
+      'border border-transparent',
+      { 'border-teal-500': isOnline },
       className
     )}
   >
     <AvatarImage src={url} />
-    <AvatarFallback>{(alt || "").charAt(0)}</AvatarFallback>
+    <AvatarFallback>{(alt || '').charAt(0)}</AvatarFallback>
   </A>
 );
 

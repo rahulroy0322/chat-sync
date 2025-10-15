@@ -59,9 +59,9 @@ const UserItem: FC<UserItemPropsType> = ({ _id, avatarUrl, uname }) => (
       <Avatar
         alt={uname}
         className='size-10'
+        isOnline
+        //! TODO
         url={avatarUrl}
-       //! TODO
-    isOnline
       />
       <div
         className='grow pointer-events-none cursor-pointer'
