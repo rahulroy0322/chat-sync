@@ -56,6 +56,7 @@ const createChatSchema = J.alternatives<ChatType>().try(
   imageChatSchema,
   videoChatSchema
 );
+
 // .messages({
 //   'alternatives.match': 'Invalid chat format',
 // });

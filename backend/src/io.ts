@@ -176,6 +176,23 @@ io.on('connection', async (socket) => {
       }
     });
 
+    socket.on('chat-status', async (uid: string, chat) => {
+      const res = validateAndLog(toSchema, uid, 'chat');
+
+      if (!res.success) {
+        return;
+      }
+
+      const socketData = await redis.get(getUserKey(res.value));
+
+      if (socketData) {
+        const { data } = JSON.parse(socketData) as {
+          data: string;
+        };
+
+        io.to(data).emit('chat-status', chat);
+      }
+    });
     const userKey = getUserKey(user.sub);
     const socketKey = getSocketKey(socket.id);
 

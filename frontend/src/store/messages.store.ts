@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { ChatType } from '@/@types/chat.types';
 import type { MessageType } from '@/@types/message.types';
 
 type UseMessagesType = {
@@ -52,10 +53,23 @@ const addMessage = (message: MessageType) =>
     messages: [...(messages || []), message],
   }));
 
+const updateLastChatToMessage = (chat: ChatType) =>
+  set(({ messages }) => {
+    const msg = (messages || []).find((m) => m._id === chat.msgId);
+    if (msg) {
+      msg.lastChat = chat;
+    }
+
+    return {
+      messages: [...(messages || [])],
+    };
+  });
+
 export {
   setMsgId,
   setFetching,
   setMessages,
+  updateLastChatToMessage,
   openSetting,
   closeSetting,
   toggleSetting,

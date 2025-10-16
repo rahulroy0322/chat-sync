@@ -1,13 +1,14 @@
 import { type FC, useEffect, useMemo } from 'react';
 import type { ChatType } from '@/@types/chat.types';
 import type { UserType } from '@/@types/user.types';
-import { addChat } from '@/store/chat.store';
+import { updateToReachedChat, updateToReadChat } from '@/api/chat';
+import { addChat, updateChat } from '@/store/chat.store';
 import useSocket, {
   addOnlineUser,
   connectIO,
   removeOnlineUser,
 } from '@/store/io.store';
-import useMessages from '@/store/messages.store';
+import useMessages, { updateLastChatToMessage } from '@/store/messages.store';
 import useUser from '@/store/user.store';
 
 const handleError = (e: unknown) => {
@@ -59,9 +60,31 @@ const Socket: FC = () => {
   }, [io, contacts]);
 
   useEffect(() => {
-    const onChat = (chat: ChatType) => {
+    const onChat = async (chat: ChatType) => {
+      if (!chat) {
+        return;
+      }
+      updateLastChatToMessage(chat);
+      let updatedChat: ChatType;
       if (chat.msgId === selectedMsg) {
         addChat(chat);
+        updatedChat = await updateToReadChat(chat);
+      } else {
+        updatedChat = await updateToReachedChat(chat);
+      }
+
+      if (updatedChat) {
+        updateChat(updatedChat);
+        const uid = useUser.getState().user?._id ?? '';
+        const messages = useMessages.getState().messages;
+
+        const otherUser = messages
+          ?.find((m) => m._id === updatedChat.msgId)
+          ?.users.find((u) => u._id !== uid);
+
+        if (otherUser) {
+          io?.emit('chat-status', otherUser._id, updatedChat);
+        }
       }
     };
 
@@ -71,6 +94,28 @@ const Socket: FC = () => {
       io?.off('chat', onChat);
     };
   }, [io, selectedMsg]);
+
+  useEffect(() => {
+    const onChatStatus = (chat: ChatType) => {
+      if (!chat) {
+        return;
+      }
+
+      updateChat(chat);
+      const { messages } = useMessages.getState();
+
+      const message = messages?.find((m) => m.lastChat?._id === chat._id);
+      if (message) {
+        updateLastChatToMessage(chat);
+      }
+    };
+
+    io?.on('chat-status', onChatStatus);
+
+    return () => {
+      io?.off('chat-status', onChatStatus);
+    };
+  }, [io]);
 
   useEffect(() => {
     const handleOnlineUser = ({ userId }: { userId: UserType['_id'] }) => {

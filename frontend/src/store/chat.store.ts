@@ -27,6 +27,25 @@ const addChat = (chat: ChatType) =>
     chats: [...(chats || []), chat],
   }));
 
+const updateChat = (chat: ChatType | undefined) =>
+  set(({ chats }) => {
+    if (!chats || !chat) {
+      return {};
+    }
+
+    const index = chats.findIndex(({ _id }) => _id === chat._id);
+
+    if (index !== -1) {
+      chats[index] = {
+        ...chat,
+      };
+    }
+
+    return {
+      chats: [...chats],
+    };
+  });
+
 const fetchChats = async (id: string) => {
   set({
     isLoading: true,
@@ -111,6 +130,6 @@ const sendChat = async (id: string, text: string) => {
   }
 };
 
-export { addChat, setChats, sendChat, fetchChats };
+export { addChat, updateChat, setChats, sendChat, fetchChats };
 
 export default useChats;

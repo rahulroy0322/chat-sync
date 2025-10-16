@@ -13,7 +13,9 @@ const StatusIcon: FC<StatusIconPropsType> = ({ status, ...props }) => {
     return (
       <CheckCheck
         {...props}
-        className={cn('text-cyan-500', props.className)}
+        className={cn(props.className, {
+          'text-cyan-500': status === 'read',
+        })}
       />
     );
   }
