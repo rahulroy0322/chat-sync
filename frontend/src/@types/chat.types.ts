@@ -16,10 +16,11 @@ type ChatTypeandTextType =
 type ChatType = {
   _id: string;
   createdAt: string;
-  editedAt: string;
+  editedAt: string | null;
   status: ChatStatusType;
   attached?: unknown;
-  sender: UserType;
+  sender: UserType['_id'];
+  receiver: UserType['_id'];
   msgId: MessageType['_id'];
 } & ChatTypeandTextType;
 

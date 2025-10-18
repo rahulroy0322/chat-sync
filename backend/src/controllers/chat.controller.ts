@@ -5,11 +5,11 @@ import type { ResType } from '../@types/res.types';
 import { STATUS } from '../constants/status.constants';
 import { ForbiddenError, NotFoundError, ValueError } from '../error/app.error';
 import logger from '../logger/log';
-import { createChatSchema } from '../schemas/chat.schema';
+import { createChatSchema, updateStatuSchema } from '../schemas/chat.schema';
 import {
   createChat,
   findChatsByMsgId,
-  findOneAndUpdate,
+  updateChats,
 } from '../services/chat.service';
 import { findMsgByID, updateLastChat } from '../services/msg.service';
 import { formatJoiError, validateJoi } from '../utils/joi';
@@ -112,73 +112,68 @@ const getChatsByMsgIdController: RequestHandler = async (req, res) => {
   } satisfies ResType);
 };
 
-const updateChatByIdController: RequestHandler = async (req, res) => {
-  const user = userRequired(req);
 
-  const { msgId, chatId } = req.params as {
-    msgId: string;
-    chatId: string;
-  };
+const updateChatStatusController: RequestHandler = async (req, res) => {
+  const user = userRequired(req);
 
   // TODO! validate using joi
 
-  // const { warning, error, value } = validateJoi(
-  //   createChatSchema as unknown as ObjectSchema<ChatType>,
-  //   req.body
-  // );
+  const { warning, error, value } = validateJoi(updateStatuSchema, req.body);
 
-  // if (warning) {
-  //   logger.warn(formatJoiError(warning), "WARNING in createChatController!");
-  // }
-
-  // if (error) {
-  //   const _error = formatJoiError(error);
-  //   console.error(_error, "ERROR!: in createChatController");
-  //   throw new ValueError(error.message);
-  // }
-
-  const msg = await findMsgByID(msgId);
-
-  if (!msg) {
-    throw new NotFoundError('Msg not found!');
-  }
-  if ('error' in msg) {
-    logger.error(msg.error, 'ERROR finding msg in "createChatController"');
-    throw new NotFoundError('Msg not found!');
+  if (warning) {
+    logger.warn(formatJoiError(warning), "WARNING in updateChatStatusController!");
   }
 
-  if (msg.users.every((uid) => uid.toString() !== user.sub)) {
-    throw new ForbiddenError('You are not in the chat!');
+  if (error) {
+    const _error = formatJoiError(error);
+    console.error(_error, "ERROR!: in updateChatStatusController");
+    throw new ValueError(error.message);
   }
 
-  // ! TODO
-  const chat = await findOneAndUpdate(
+  const chats = await updateChats(
     {
-      _id: chatId,
-      msgId: msgId,
+      $and: [
+        {
+          _id: {
+            $in: value.chatIds,
+          },
+        },
+        {
+          $or: [
+            {
+              sender: user.sub,
+            },
+            {
+              receiver: user.sub,
+            },
+          ],
+        },
+      ],
     },
-
-    req.body
+    {
+      status: value.status,
+    }
   );
 
-  if (!chat) {
-    throw new NotFoundError('something went wrong!');
-  }
-  if ('error' in chat) {
-    logger.error(chat.error, 'ERROR creating chat in  "createChatController"');
-    throw new NotFoundError('some error happeden!');
+  if (!chats || "error" in chats) {
+    logger.error(
+      chats?.error ?? null,
+      'ERROR finding msg in "updateChatStatusController"'
+    );
+    throw new NotFoundError("Error updating chat status!");
   }
 
   res.status(STATUS.CREATED).json({
     success: true,
     data: {
-      chat,
+      chats,
     },
   } satisfies ResType);
 };
 
+
 export {
   createChatController,
-  updateChatByIdController,
+  updateChatStatusController,
   getChatsByMsgIdController,
 };

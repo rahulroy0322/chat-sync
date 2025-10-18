@@ -5,12 +5,17 @@ import MessagesPage from '@/pages/messages.page';
 import useMessages from '@/store/messages.store';
 import TabsContent from './main.tabs';
 
-const MessagesTab: FC = () => {
+const MessagesTabPage: FC = () => {
   const selected = useMessages((state) => state.selectedMsg);
+
+  return selected ? <ChatPage /> : <MessagesPage />;
+};
+
+const MessagesTab: FC = () => {
   return (
     <TabsContent value={'message'}>
       <MessagesLayoutLogic>
-        {selected ? <ChatPage /> : <MessagesPage />}
+        <MessagesTabPage />
       </MessagesLayoutLogic>
     </TabsContent>
   );

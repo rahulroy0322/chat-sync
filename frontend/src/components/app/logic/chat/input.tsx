@@ -12,10 +12,10 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { sendChat } from '@/api/chat';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import useChats, { sendChat } from '@/store/chat.store';
-import useSocket from '@/store/io.store';
+import useChats from '@/store/chat.store';
 import useMessages from '@/store/messages.store';
 import useUser from '@/store/user.store';
 import {
@@ -25,31 +25,32 @@ import {
 } from '../../ui/chat/input';
 
 const ChatInput: FC = () => {
-  const isLoading = useChats((state) => state.isLoading || state.isSending);
+  const sending = useChats((state) => state.sending);
   const user = useUser((state) => state.user);
-  const msgId = useMessages((state) => state.selectedMsg);
-  const messages = useMessages((state) => state.messages);
-  const io = useSocket((state) => state.io);
+  const _message = useMessages((state) =>
+    state.messages && state.selectedMsg
+      ? state.messages[state.selectedMsg]
+      : null
+  );
+  // const io = useSocket((state) => state.io);
   const [msg, setMsg] = useState('');
 
   const isSendDisabled = useMemo(() => {
-    return !msg || isLoading;
-  }, [isLoading, msg]);
+    return !msg || sending;
+  }, [msg, sending]);
 
   const handleMsgSubmit = async () => {
-    if (!msg.trim() || !msgId) return;
+    if (!msg.trim() || !_message) return;
     setMsg('');
-    const chat = await sendChat(msgId, msg);
+    const chat = await sendChat(_message, msg);
     if (!user) {
       return;
     }
-    const uid = messages
-      ?.find((m) => m._id === msgId)
-      ?.users.find((u) => u._id !== user._id);
+    const uid = _message.users.find((u) => u !== user._id);
     if (!uid) {
       return;
     }
-    io?.emit('chat', uid._id, chat);
+    // io?.emit("chat", uid._id, chat);
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +105,7 @@ const ChatInput: FC = () => {
         size='icon'
         variant='input'
       >
-        {isLoading ? (
+        {sending ? (
           <LoaderPinwheel className='animate-spin animation-duration-[750ms]' />
         ) : (
           <Send />

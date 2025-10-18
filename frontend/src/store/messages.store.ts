@@ -1,27 +1,21 @@
 import { create } from 'zustand';
-import type { ChatType } from '@/@types/chat.types';
 import type { MessageType } from '@/@types/message.types';
 
 type UseMessagesType = {
   selectedMsg: string | null;
   isSettingOpen: boolean;
-  messages: MessageType[] | null;
-  isFetching: boolean;
+  messages: Record<MessageType['_id'], MessageType> | null;
+  // isFetching: boolean;
 };
 
 const useMessages = create<UseMessagesType>(() => ({
   isSettingOpen: false,
   selectedMsg: null,
   messages: null,
-  isFetching: false,
+  // isFetching: false,
 }));
 
 const { getState: get, setState: set } = useMessages;
-
-const setFetching = (isFetching: boolean) =>
-  set({
-    isFetching,
-  });
 
 const setMsgId = (msgId: UseMessagesType['selectedMsg']) =>
   set({
@@ -43,37 +37,11 @@ const toggleSetting = () =>
     isSettingOpen: !get().isSettingOpen,
   });
 
-const setMessages = (messages: MessageType[]) =>
+const setMessages = (messages: UseMessagesType['messages']) =>
   set({
     messages,
   });
 
-const addMessage = (message: MessageType) =>
-  set(({ messages }) => ({
-    messages: [...(messages || []), message],
-  }));
-
-const updateLastChatToMessage = (chat: ChatType) =>
-  set(({ messages }) => {
-    const msg = (messages || []).find((m) => m._id === chat.msgId);
-    if (msg) {
-      msg.lastChat = chat;
-    }
-
-    return {
-      messages: [...(messages || [])],
-    };
-  });
-
-export {
-  setMsgId,
-  setFetching,
-  setMessages,
-  updateLastChatToMessage,
-  openSetting,
-  closeSetting,
-  toggleSetting,
-  addMessage,
-};
+export { setMsgId, setMessages, openSetting, closeSetting, toggleSetting };
 
 export default useMessages;

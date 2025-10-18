@@ -133,7 +133,7 @@ dist
 *lock*
 
 # output files
-lib
+!lib
 dist
 build
 bin

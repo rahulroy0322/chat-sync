@@ -2,7 +2,7 @@ import { type FC, useEffect, useMemo } from 'react';
 import type { ChatType } from '@/@types/chat.types';
 import type { UserType } from '@/@types/user.types';
 import { updateToReachedChat, updateToReadChat } from '@/api/chat';
-import { addChat, updateChat } from '@/store/chat.store';
+import { addChat, updateChats } from '@/store/chat.store';
 import useSocket, {
   addOnlineUser,
   connectIO,
@@ -74,7 +74,7 @@ const Socket: FC = () => {
       }
 
       if (updatedChat) {
-        updateChat(updatedChat);
+        updateChats([updatedChat]);
         const uid = useUser.getState().user?._id ?? '';
         const messages = useMessages.getState().messages;
 
@@ -101,10 +101,10 @@ const Socket: FC = () => {
         return;
       }
 
-      updateChat(chat);
+      updateChats([chat]);
       const { messages } = useMessages.getState();
 
-      const message = messages?.find((m) => m.lastChat?._id === chat._id);
+      const message = messages?.find((m) => m.lastChat === chat._id);
       if (message) {
         updateLastChatToMessage(chat);
       }

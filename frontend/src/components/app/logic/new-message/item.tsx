@@ -5,7 +5,7 @@ import { req } from '@/api/main';
 import Avatar from '@/components/app/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { addMessage, setMsgId } from '@/store/messages.store';
+import { setMsgId } from '@/store/messages.store';
 import { setContactOpen } from '@/store/settings.store';
 import useAddUserContext from './context';
 
@@ -29,7 +29,9 @@ const UserLink: FC<UserLinkPropsType> = ({ id, children }) => {
         },
       });
 
-      addMessage(message);
+      // ! todo
+
+      // addMessage(message);
       setContactOpen(false);
       setMsgId(message._id);
     } catch (e) {

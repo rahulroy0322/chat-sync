@@ -4,24 +4,18 @@ import {
   type ProjectionType,
   type QueryOptions,
   Types,
-} from 'mongoose';
-import type { ChatType } from '../@types/chat.types';
-import type { DbResType } from '../@types/db.types';
-import type { MSGType } from '../@types/message.types';
-import type { UserType } from '../@types/user.types';
-import Msg from '../models/message.model';
+} from "mongoose";
+import type { ChatType } from "../@types/chat.types";
+import type { DbResType } from "../@types/db.types";
+import type { MSGType } from "../@types/message.types";
+import type { UserType } from "../@types/user.types";
+import Msg from "../models/message.model";
 
 const findMsg = (
   where: FilterQuery<MSGType>,
   projection?: ProjectionType<MSGType>,
   options?: QueryOptions<MSGType>
-) =>
-  Msg.find(where, projection, options).populate([
-    'users',
-    'lastChat',
-  ]) as unknown as Promise<
-    (MSGType & { lastChat: ChatType | null; users: UserType[] })[]
-  >;
+) => Msg.find(where, projection, options) as Promise<MSGType[]>;
 
 const findMsgByID = async (id: string): Promise<DbResType<MSGType, null>> => {
   try {
@@ -61,7 +55,7 @@ const findOrCreateMsg = async (
 ): Promise<
   DbResType<
     {
-      status: 'created' | 'find';
+      status: "created" | "find";
       data: MSGType | null;
     },
     null
@@ -86,7 +80,7 @@ const findOrCreateMsg = async (
       )?.toJSON();
       if (msg) {
         return {
-          status: 'find',
+          status: "find",
           data: msg,
         };
       }
@@ -102,7 +96,7 @@ const findOrCreateMsg = async (
 
     if (msg) {
       return {
-        status: 'created',
+        status: "created",
         data: msg,
       };
     }
@@ -134,7 +128,7 @@ const updateLastChat = async (
       {
         new: true,
       }
-    ).populate(['users', 'lastChat'])) as null;
+    ).populate(["users", "lastChat"])) as null;
   } catch (e) {
     if (e instanceof DbError) {
       return {

@@ -1,7 +1,9 @@
+import { useLiveQuery } from 'dexie-react-hooks';
 import { type FC, useEffect, useRef } from 'react';
 import type { ChatType } from '@/@types/chat.types';
 import type { UserType } from '@/@types/user.types';
-import useChats from '@/store/chat.store';
+import { db } from '@/db/dexie';
+import useMessages from '@/store/messages.store';
 import useUser from '@/store/user.store';
 import ChatListUI from '../../ui/chat/list';
 import ChatItem from './item';
@@ -22,7 +24,21 @@ const ListImpl: FC<ListImplPropsType> = ({ chats, user }) =>
 
 const ChatList: FC = () => {
   const endRef = useRef<HTMLSpanElement>(null);
-  const chats = useChats((state) => state.chats);
+
+  const selectedMsg = useMessages((state) => state.selectedMsg);
+
+  const chats = useLiveQuery(async () => {
+    if (!selectedMsg) {
+      return null;
+    }
+
+    return await db.chats
+      .where({
+        msgId: selectedMsg,
+      })
+      .sortBy('createdAt');
+  }, [selectedMsg]);
+
   const user = useUser((state) => state.user);
 
   useEffect(() => {

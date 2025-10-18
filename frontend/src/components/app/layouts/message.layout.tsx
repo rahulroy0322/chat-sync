@@ -1,21 +1,13 @@
+import { useLiveQuery } from 'dexie-react-hooks';
 import { UserRoundPlus } from 'lucide-react';
-import {
-  type FC,
-  type PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react';
+import { type FC, type PropsWithChildren, useCallback, useMemo } from 'react';
 import type { MessageType } from '@/@types/message.types';
-import { req } from '@/api/main';
 import Avatar from '@/components/app/ui/avatar';
 import { Button } from '@/components/ui/button';
-import useSocket from '@/store/io.store';
-import useMessages, {
-  setFetching,
-  setMessages,
-  setMsgId,
-} from '@/store/messages.store';
+import { db } from '@/db/dexie';
+import useChats from '@/store/chat.store';
+import useContacts from '@/store/contact.store';
+import useMessages, { setMsgId } from '@/store/messages.store';
 import useSettings, { setContactOpen } from '@/store/settings.store';
 import useUser from '@/store/user.store';
 import AddUsersList from '../logic/new-message';
@@ -50,23 +42,31 @@ const LayoutLink: FC<LayoutLinkPropsType> = ({ id, children }) => {
 };
 
 const MessageItem: FC<MessageItemPropsType> = ({
-  _id,
   users,
+  _id,
   lastChat,
   isOnline,
 }) => {
   const user = useUser((state) => state.user);
 
-  const conact = useMemo(
-    () => users.find((u) => u._id !== user?._id),
+  const otherUserId = useMemo(
+    () => users.find((u) => u !== user?._id),
     [user?._id, users]
   );
 
-  if (!conact) {
+  const contact = useContacts((state) =>
+    state.contacts && otherUserId ? state.contacts[otherUserId] : null
+  );
+
+  const chat = useChats((state) =>
+    state.chats && lastChat ? state.chats[lastChat] : null
+  );
+
+  if (!contact) {
     return null;
   }
 
-  const { _id: uid, avatarUrl, uname } = conact;
+  const { avatarUrl, uname } = contact;
 
   return (
     <li>
@@ -82,22 +82,22 @@ const MessageItem: FC<MessageItemPropsType> = ({
           role='presentation'
         >
           <h2 className='text-base font-semibold w-fit'>{uname}</h2>
-          {lastChat ? (
+          {!chat ? null : (
             <div
               className='flex gap-1 items-center'
               role='presentation'
             >
               <h3 className='line-clamp-1 text-start text-sm grow'>
-                {lastChat.text}
+                {chat.text}
               </h3>
-              {uid !== user?._id ? null : (
+              {chat.sender !== user?._id ? null : (
                 <StatusIcon
                   className='size-5 p-0.5 shrink-0'
-                  status={lastChat.status}
+                  status={chat.status}
                 />
               )}
             </div>
-          ) : null}
+          )}
         </div>
       </LayoutLink>
     </li>
@@ -105,49 +105,50 @@ const MessageItem: FC<MessageItemPropsType> = ({
 };
 
 const MessagesList: FC = () => {
-  const messages = useMessages((state) => state.messages);
-  const isFetching = useMessages((state) => state.isFetching);
-  const onlineUsers = useSocket((state) => state.onlineUsers);
-  const user = useUser((state) => state.user);
-  const token = useUser((state) => state.token);
+  const messages = useLiveQuery(async () => await db.messages.toArray(), []);
 
-  useEffect(() => {
-    const controller = new AbortController();
+  // const isFetching = useMessages((state) => state.isFetching);
+  // const onlineUsers = useSocket((state) => state.onlineUsers);
+  // const user = useUser((state) => state.user);
+  // const token = useUser((state) => state.token);
 
-    const getMessages = async () => {
-      if (!token) return;
-      try {
-        setFetching(true);
-        const { messages } = await req<{ messages: MessageType[] }>(
-          'msg',
-          undefined,
-          controller.signal
-        );
+  // useEffect(() => {
+  //   const controller = new AbortController();
 
-        setMessages(messages);
-      } catch (e) {
-        console.error('ERROR:', e);
-      } finally {
-        setFetching(false);
-      }
-    };
+  //   const getMessages = async () => {
+  //     if (!token) return;
+  //     try {
+  //       setFetching(true);
+  //       const { messages } = await req<{ messages: MessageType[] }>(
+  //         "msg",
+  //         undefined,
+  //         controller.signal
+  //       );
 
-    getMessages();
+  //       setMessages(messages);
+  //     } catch (e) {
+  //       console.error("ERROR:", e);
+  //     } finally {
+  //       setFetching(false);
+  //     }
+  //   };
 
-    return () => {
-      controller.abort();
-    };
-  }, [token]);
+  //   getMessages();
 
-  if (isFetching) {
+  //   return () => {
+  //     controller.abort();
+  //   };
+  // }, [token]);
+
+  if (messages === undefined) {
     // TODO!
     return 'fetching';
   }
 
-  if (!messages || !user) {
-    // TODO!
-    return null;
-  }
+  // if (!messages || !user) {
+  //   // TODO!
+  //   return null;
+  // }
 
   return (
     <>
@@ -156,9 +157,10 @@ const MessagesList: FC = () => {
           <MessageItem
             key={msg._id}
             {...msg}
-            isOnline={onlineUsers.has(
-              msg.users.find((u) => u._id !== user._id)?._id ?? ''
-            )}
+            isOnline
+            // isOnline={onlineUsers.has(
+            //   msg.users.find((u) => u._id !== user._id)?._id ?? ""
+            // )}
           />
         ))}
       </ul>

@@ -4,6 +4,7 @@ import type { ChatStatusType } from '@/@types/status.types';
 import type { UserType } from '@/@types/user.types';
 import Avatar from '@/components/app/ui/avatar';
 import { cn } from '@/lib/utils';
+import useContacts from '@/store/contact.store';
 import StatusIcon from '../status-icon';
 
 type ChatTimePropsType = {
@@ -123,8 +124,8 @@ const ChatAvatar: FC<ChatAvatarPropsType> = ({ name, url }) => (
   <Avatar
     alt={name}
     className='size-8'
-    isOnline
     //! TODO
+    isOnline
     url={url}
   />
 );
@@ -227,10 +228,17 @@ const ChatWrapper: FC<ChatWrapperPropsType> = ({ children, isFigure }) => (
 );
 
 const ChatItemUI: FC<ChatItemUIPropsType> = ({ user, sender, ...props }) => {
-  const isMe = sender._id === user._id;
+  const isMe = sender === user._id;
   const Comp = isMe ? ChatMe : ChatOther;
 
-  const _user = isMe ? user : sender;
+  const _user = isMe
+    ? user
+    : useContacts.getState().contacts?.[sender] ||
+      ({
+        avatarUrl: '/profile.gif',
+        _id: 'unknown',
+        uname: 'unknown user',
+      } satisfies UserType);
 
   return (
     <li
