@@ -61,6 +61,12 @@ const ChatSchema = new Schema<ChatModelType>(
       ref: models.user,
       required: [true, 'Sender is required'],
     },
+    // @ts-expect-error
+    receiver: {
+      type: Schema.Types.ObjectId,
+      ref: models.user,
+      required: [true, 'Receiver is required'],
+    },
   },
   {
     timestamps: true,

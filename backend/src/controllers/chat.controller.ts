@@ -46,7 +46,9 @@ const createChatController: RequestHandler = async (req, res) => {
     throw new NotFoundError('Msg not found!');
   }
 
-  if (msg.users.every((uid) => uid.toString() !== user.sub)) {
+  const receiverId = msg.users.find((uid) => uid.toString() !== user.sub);
+
+  if (!receiverId) {
     throw new ForbiddenError('You are not in the chat!');
   }
 
@@ -54,6 +56,7 @@ const createChatController: RequestHandler = async (req, res) => {
     ...value,
     msgId,
     sender: user.sub,
+    receiver: receiverId,
   });
 
   if (!chat) {

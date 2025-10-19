@@ -1,4 +1,5 @@
 import type { RequestHandler } from 'express';
+import { Types } from 'mongoose';
 import type { ResType } from '../@types/res.types';
 import { STATUS } from '../constants/status.constants';
 import { NotFoundError } from '../error/app.error';
@@ -10,13 +11,15 @@ import { userRequired } from '../utils/user';
 const syncChatsGetController: RequestHandler = async (req, res) => {
   const user = userRequired(req);
 
+  const userId = new Types.ObjectId(user.sub);
+
   const chats = await findChats({
     $or: [
       {
-        sender: user.sub,
+        sender: userId,
       },
       {
-        receiver: user.sub,
+        receiver: userId,
       },
     ],
   });

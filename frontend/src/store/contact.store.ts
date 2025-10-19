@@ -5,11 +5,9 @@ type UseContactsType = {
   contacts: Record<UserType['_id'], UserType> | null;
 };
 
-const useContacts = create<UseContactsType>(
-    () => ({
-      contacts: null,
-    }),
-);
+const useContacts = create<UseContactsType>(() => ({
+  contacts: null,
+}));
 
 const { setState: set } = useContacts;
 
