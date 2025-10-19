@@ -59,18 +59,20 @@ const sendChat = async (message: MessageType, msg: string) => {
     });
 
     //  ! todo
-    // const { chat } = await req<{ chat: ChatType }>(`chat/msg/${id}`, {
-    //   method: "POST",
-    //   body: {
-    //     type: "text",
-    //     text,
-    //   },
-    // });
+    const { chat: _chat } = await req<{ chat: ChatType }>(
+      `chat/msg/${message._id}`,
+      {
+        method: 'POST',
+        body: {
+          type: 'text',
+          text: msg,
+        },
+      }
+    );
+
     await new Promise((res) => setTimeout(res, 250));
 
-    await db.chats.update(chat._id, {
-      status: 'sent',
-    });
+    await db.chats.update(chat._id, _chat);
     return chat;
   } catch (e) {
     console.error('ERROR:', e);

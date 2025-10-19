@@ -61,15 +61,14 @@ const createChatSchema = J.alternatives<ChatType>().try(
 //   'alternatives.match': 'Invalid chat format',
 // });
 
-
 type UpdateStatuSchemaType = {
   chatIds: string[];
-  status: "reached" | "read";
+  status: 'reached' | 'read';
 };
 
 const updateStatuSchema = J.object<UpdateStatuSchemaType>({
   chatIds: J.array().items(J.string()).required(),
-  status: J.string().valid(...(["reached", "read"] satisfies ChatStatusType[])),
+  status: J.string().valid(...(['reached', 'read'] satisfies ChatStatusType[])),
 });
 
-export { createChatSchema,updateStatuSchema };
+export { createChatSchema, updateStatuSchema };

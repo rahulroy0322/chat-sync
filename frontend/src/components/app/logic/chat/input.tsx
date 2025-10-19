@@ -42,7 +42,7 @@ const ChatInput: FC = () => {
   const handleMsgSubmit = async () => {
     if (!msg.trim() || !_message) return;
     setMsg('');
-    const chat = await sendChat(_message, msg);
+    const _chat = await sendChat(_message, msg);
     if (!user) {
       return;
     }

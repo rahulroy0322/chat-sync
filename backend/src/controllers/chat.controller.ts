@@ -66,18 +66,10 @@ const createChatController: RequestHandler = async (req, res) => {
 
   await updateLastChat(msgId, chat._id.toString());
 
-  const { sub, ...sender } = user;
-
   res.status(STATUS.CREATED).json({
     success: true,
     data: {
-      chat: {
-        ...chat,
-        sender: {
-          ...sender,
-          _id: sub,
-        },
-      },
+      chat,
     },
   } satisfies ResType);
 };
@@ -112,7 +104,6 @@ const getChatsByMsgIdController: RequestHandler = async (req, res) => {
   } satisfies ResType);
 };
 
-
 const updateChatStatusController: RequestHandler = async (req, res) => {
   const user = userRequired(req);
 
@@ -121,12 +112,15 @@ const updateChatStatusController: RequestHandler = async (req, res) => {
   const { warning, error, value } = validateJoi(updateStatuSchema, req.body);
 
   if (warning) {
-    logger.warn(formatJoiError(warning), "WARNING in updateChatStatusController!");
+    logger.warn(
+      formatJoiError(warning),
+      'WARNING in updateChatStatusController!'
+    );
   }
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, "ERROR!: in updateChatStatusController");
+    console.error(_error, 'ERROR!: in updateChatStatusController');
     throw new ValueError(error.message);
   }
 
@@ -155,12 +149,12 @@ const updateChatStatusController: RequestHandler = async (req, res) => {
     }
   );
 
-  if (!chats || "error" in chats) {
+  if (!chats || 'error' in chats) {
     logger.error(
       chats?.error ?? null,
       'ERROR finding msg in "updateChatStatusController"'
     );
-    throw new NotFoundError("Error updating chat status!");
+    throw new NotFoundError('Error updating chat status!');
   }
 
   res.status(STATUS.CREATED).json({
@@ -170,7 +164,6 @@ const updateChatStatusController: RequestHandler = async (req, res) => {
     },
   } satisfies ResType);
 };
-
 
 export {
   createChatController,

@@ -35,14 +35,16 @@
 
 import { Tabs } from '@radix-ui/react-tabs';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { type FC, useEffect } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import type { ChatType } from '@/@types/chat.types';
 import type { MessageType } from '@/@types/message.types';
 import type { UserType } from '@/@types/user.types';
+import { syncDb } from '@/db';
 import { db } from '@/db/dexie';
 import { setChats } from '@/store/chat.store';
 import { setContacts } from '@/store/contact.store';
 import { setMessages, setMsgId } from '@/store/messages.store';
+import useUser from '@/store/user.store';
 import CallTab from '@/tabs/call.tabs';
 import GroupTab from '@/tabs/group.tabs';
 import MessagesTab from '@/tabs/messages.tabs';
@@ -126,10 +128,27 @@ const MainLayoutImpl: FC = () => {
   );
 };
 
+const SyncDb: FC = () => {
+  const [isInitialized, setIsInitialized] = useState(false); // just to sync
+  const token = useUser((state) => state.token);
+
+  useEffect(() => {
+    if (!token || isInitialized) {
+      return;
+    }
+
+    syncDb();
+    setIsInitialized(true);
+  }, [token, isInitialized]);
+
+  return null;
+};
+
 const MainLayout: FC = () => (
   <>
     <MainLayoutImpl />
     <SyncStore />
+    <SyncDb />
   </>
 );
 

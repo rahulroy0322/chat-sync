@@ -5,14 +5,12 @@ type UseMessagesType = {
   selectedMsg: string | null;
   isSettingOpen: boolean;
   messages: Record<MessageType['_id'], MessageType> | null;
-  // isFetching: boolean;
 };
 
 const useMessages = create<UseMessagesType>(() => ({
   isSettingOpen: false,
   selectedMsg: null,
   messages: null,
-  // isFetching: false,
 }));
 
 const { getState: get, setState: set } = useMessages;

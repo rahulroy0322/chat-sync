@@ -1,7 +1,14 @@
-import { Error as DbError, type FilterQuery, type UpdateQuery } from "mongoose";
-import type { ChatType } from "../@types/chat.types";
-import type { DbResType } from "../@types/db.types";
-import Chat from "../models/chat.model";
+import type { Abortable } from 'node:events';
+import {
+  Error as DbError,
+  type FilterQuery,
+  type ProjectionType,
+  type QueryOptions,
+  type UpdateQuery,
+} from 'mongoose';
+import type { ChatModelType, ChatType } from '../@types/chat.types';
+import type { DbResType } from '../@types/db.types';
+import Chat from '../models/chat.model';
 
 const createChat = async (data: ChatType): DbResType<ChatType, null> => {
   try {
@@ -17,11 +24,13 @@ const createChat = async (data: ChatType): DbResType<ChatType, null> => {
   }
 };
 
-const findChatsByMsgId = async (id: string): DbResType<ChatType[], null> => {
+const findChats = async (
+  where: FilterQuery<ChatType>,
+  projection?: ProjectionType<ChatType>,
+  options?: QueryOptions<ChatModelType> & { lean: true } & Abortable
+): DbResType<ChatType[], null> => {
   try {
-    return await Chat.find({
-      msgId: id,
-    }).populate("sender");
+    return await Chat.find(where, projection, options);
   } catch (e) {
     if (e instanceof DbError) {
       return {
@@ -32,6 +41,11 @@ const findChatsByMsgId = async (id: string): DbResType<ChatType[], null> => {
     return null;
   }
 };
+
+const findChatsByMsgId = async (id: string): DbResType<ChatType[], null> =>
+  await findChats({
+    msgId: id,
+  });
 
 // const findOneAndUpdate = async (
 //   where: FilterQuery<ChatType>,
@@ -73,4 +87,4 @@ const updateChats = async (
   }
 };
 
-export { updateChats, createChat, findChatsByMsgId };
+export { updateChats, createChat, findChats, findChatsByMsgId };
