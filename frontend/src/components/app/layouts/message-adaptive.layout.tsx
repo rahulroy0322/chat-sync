@@ -7,13 +7,6 @@ type MessagesLayoutImplPropsType = Readonly<{
   isRoot?: boolean;
 }>;
 
-type MessagesLayoutLogicPropsType = Omit<
-  MessagesLayoutImplPropsType,
-  'isRoot'
-> & {
-  selected: string | null;
-};
-
 const MessagesLayoutImpl: FC<MessagesLayoutImplPropsType> = ({
   children,
   side,
@@ -22,7 +15,10 @@ const MessagesLayoutImpl: FC<MessagesLayoutImplPropsType> = ({
   const isMobile = useIsMobile();
 
   if (isMobile) {
-    return isRoot ? side : children;
+    if (isRoot) {
+      return side;
+    }
+    return children;
   }
   return (
     <>
@@ -32,17 +28,30 @@ const MessagesLayoutImpl: FC<MessagesLayoutImplPropsType> = ({
   );
 };
 
+type MessagesLayoutLogicPropsType = Omit<
+  MessagesLayoutImplPropsType,
+  'isRoot'
+> & {
+  selected: null | string;
+};
+
 const MessagesLayoutLogic: FC<MessagesLayoutLogicPropsType> = ({
   children,
   side,
   selected,
-}) => (
-  <MessagesLayoutImpl
-    isRoot={!selected}
-    side={side}
-  >
-    {children}
-  </MessagesLayoutImpl>
-);
+}) => {
+  if (!selected) {
+    return (
+      <MessagesLayoutImpl
+        isRoot
+        side={side}
+      >
+        {children}
+      </MessagesLayoutImpl>
+    );
+  }
+
+  return <MessagesLayoutImpl side={side}>{children}</MessagesLayoutImpl>;
+};
 
 export default MessagesLayoutLogic;

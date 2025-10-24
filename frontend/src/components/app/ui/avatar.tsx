@@ -9,13 +9,13 @@ import { cn } from '@/lib/utils';
 type AvatarPropsType = {
   url: string;
   alt: string;
-  isOnline: boolean;
+  isOnline?: boolean;
 } & ComponentProps<typeof A>;
 
 const Avatar: FC<AvatarPropsType> = ({
   url,
   alt,
-  isOnline,
+  isOnline = false,
   className,
   ...props
 }) => (

@@ -4,9 +4,11 @@ import {
   type FormEvent,
   type RefObject,
   useRef,
+  useState,
 } from 'react';
+import { login } from '@/api';
 import { Button } from '@/components/ui/button';
-import { login } from '@/store/user.store';
+import useUser from '@/store/user.store';
 
 type FieldPropsType = {
   label: string;
@@ -28,20 +30,46 @@ const Field: FC<FieldPropsType> = ({ label, ...props }) => (
 );
 
 const AuthPage: FC = () => {
+  const [loading, setLoading] = useState(false);
+
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
 
     if (email && password) {
-      login({
-        email,
-        password,
-      });
+      try {
+        setLoading(true);
+        const _data = await login({
+          email,
+          password,
+        });
+        if ('error' in _data) {
+          throw _data.error;
+        }
+
+        const {
+          data: {
+            token: { access, refresh },
+            user,
+          },
+        } = _data;
+
+        useUser.setState({
+          user,
+          refreshToken: refresh,
+          token: access,
+        });
+      } catch (e) {
+        // TODO?
+        console.error('e', e);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -70,7 +98,12 @@ const AuthPage: FC = () => {
           ref={passwordRef}
           type='text'
         />
-        <Button type='submit'>Login</Button>
+        <Button
+          disabled={loading}
+          type='submit'
+        >
+          Login
+        </Button>
       </form>
     </div>
   );

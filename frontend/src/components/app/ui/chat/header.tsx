@@ -18,7 +18,7 @@ type ChatHeaderUIPropsType = {
   avatarUrl: string;
   uname: string;
   lastSeen: string;
-  isOnline: boolean;
+  isOnline?: boolean;
 } & ComponentProps<'button'>;
 
 const HeaderIcon: FC<HeaderIconPropsType> = ({ Icon }) => (

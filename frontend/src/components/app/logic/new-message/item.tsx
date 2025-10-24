@@ -1,45 +1,49 @@
 import { type FC, type ReactNode, useCallback } from 'react';
-import type { MessageType } from '@/@types/message.types';
 import type { UserType } from '@/@types/user.types';
-import { req } from '@/api/main';
 import Avatar from '@/components/app/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { db } from '@/db/main';
 import { cn } from '@/lib/utils';
 import { setMsgId } from '@/store/messages.store';
 import { setContactOpen } from '@/store/settings.store';
 import useAddUserContext from './context';
 
 type UserLinkPropsType = {
-  id: string;
+  user: UserType;
   children: ReactNode;
 };
 
-const UserLink: FC<UserLinkPropsType> = ({ id, children }) => {
+const UserLink: FC<UserLinkPropsType> = ({ user, children }) => {
   const { loading, setLoading } = useAddUserContext();
 
   const handleClick = useCallback(async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const { message } = await req<{
-        message: MessageType;
-      }>('/msg', {
-        method: 'POST',
-        body: {
-          uid: id,
-        },
-      });
+      let msg = await db.messages
+        .where({
+          _id: user._id,
+        })
+        .first();
 
-      // ! todo
-
-      // addMessage(message);
+      if (msg?._id) {
+        setMsgId(msg);
+        return;
+      }
+      // ? TODO
+      msg = {
+        _id: user._id,
+        lastMsgId: null,
+      };
+      await db.messages.add(msg);
+      await db.contacts.add(user);
       setContactOpen(false);
-      setMsgId(message._id);
+      setMsgId(msg);
     } catch (e) {
-      console.error('ERROR:', e);
+      console.error('ERROR create new message: ', e);
     } finally {
       setLoading(false);
     }
-  }, [id, setLoading]);
+  }, [setLoading, user]);
 
   return (
     <Button
@@ -55,21 +59,21 @@ const UserLink: FC<UserLinkPropsType> = ({ id, children }) => {
 
 type UserItemPropsType = UserType;
 
-const UserItem: FC<UserItemPropsType> = ({ _id, avatarUrl, uname }) => (
+const UserItem: FC<UserItemPropsType> = (user) => (
   <li className='flex gap-2 items-center p-1 w-full'>
-    <UserLink id={_id}>
+    <UserLink user={user}>
       <Avatar
-        alt={uname}
+        alt={user.uname}
         className='size-10'
         isOnline
         //! TODO
-        url={avatarUrl}
+        url={user.avatarUrl}
       />
       <div
         className='grow pointer-events-none cursor-pointer'
         role='presentation'
       >
-        <h2 className='text-base font-semibold w-fit'>{uname}</h2>
+        <h2 className='text-base font-semibold w-fit'>{user.uname}</h2>
       </div>
     </UserLink>
   </li>

@@ -12,7 +12,6 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { sendChat } from '@/api/chat';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import useChats from '@/store/chat.store';
@@ -23,44 +22,42 @@ import {
   ChatInputMainWrapperUI,
   ChatInputUI,
 } from '../../ui/chat/input';
+import { sendChat } from '@/api/chat.api';
 
 const ChatInput: FC = () => {
-  const sending = useChats((state) => state.sending);
-  const user = useUser((state) => state.user);
-  const _message = useMessages((state) =>
-    state.messages && state.selectedMsg
-      ? state.messages[state.selectedMsg]
-      : null
-  );
-  // const io = useSocket((state) => state.io);
-  const [msg, setMsg] = useState('');
+   const msg = useMessages((state) => state.selectedMsg);
+  const isSending = useChats((state) => state.isSending);
+  const [text, setText] = useState('');
 
   const isSendDisabled = useMemo(() => {
-    return !msg || sending;
-  }, [msg, sending]);
+    return !text || isSending;
+  }, [isSending, text]);
 
-  const handleMsgSubmit = async () => {
-    if (!msg.trim() || !_message) return;
-    setMsg('');
-    const _chat = await sendChat(_message, msg);
-    if (!user) {
+  const handleMsgSubmit = () => {
+    if (!text.trim()) return;
+    const userId = useUser.getState().user?._id;
+
+    if (!userId || !msg) {
       return;
     }
-    const uid = _message.users.find((u) => u !== user._id);
-    if (!uid) {
-      return;
-    }
-    // io?.emit("chat", uid._id, chat);
+
+    sendChat({
+      msg,
+      userId,
+      text,
+    });
+    setText('');
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
-    setMsg(e.target.value);
+    setText(e.target.value);
   };
 
   const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key.toString().toLowerCase() === 'enter') {
       if (e.metaKey || e.ctrlKey) {
-        setMsg('');
+        setText('');
+        return;
       }
       handleMsgSubmit();
     }
@@ -78,7 +75,7 @@ const ChatInput: FC = () => {
         <ChatInputUI
           onChange={handleInput}
           onKeyUp={handleKeyUp}
-          value={msg}
+          value={text}
         />
         <Button
           size='icon'
@@ -105,7 +102,7 @@ const ChatInput: FC = () => {
         size='icon'
         variant='input'
       >
-        {sending ? (
+        {isSending ? (
           <LoaderPinwheel className='animate-spin animation-duration-[750ms]' />
         ) : (
           <Send />
@@ -114,5 +111,7 @@ const ChatInput: FC = () => {
     </ChatInputMainWrapperUI>
   );
 };
+
+
 
 export default ChatInput;

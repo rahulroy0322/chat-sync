@@ -1,4 +1,3 @@
-import type { MessageType } from './message.types';
 import type { ChatStatusType } from './status.types';
 import type { UserType } from './user.types';
 
@@ -21,7 +20,6 @@ type ChatType = {
   attached?: unknown;
   sender: UserType['_id'];
   receiver: UserType['_id'];
-  msgId: MessageType['_id'];
 } & ChatTypeandTextType;
 
 export type { ChatType, ChatTypeandTextType };

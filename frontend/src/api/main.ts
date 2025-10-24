@@ -1,6 +1,6 @@
 import type { ResType } from '@/@types/res.types';
 import useUser from '@/store/user.store';
-import { refreshToken } from './auth';
+import { refreshToken } from './auth.api';
 
 const BASE_URL = 'http://localhost:8000';
 

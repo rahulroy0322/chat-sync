@@ -1,8 +1,18 @@
-import { createContext, type FC, type ReactNode, use, useState } from 'react';
+import {
+  createContext,
+  type FC,
+  type ReactNode,
+  use,
+  useEffect,
+  useState,
+} from 'react';
+import type { UserType } from '@/@types/user.types';
+import { getAllUser } from '@/api';
 
 type AddUserContextType = {
   loading: boolean;
   setLoading: (value: boolean) => void;
+  users: UserType[];
 };
 
 const AddUserContext = createContext<AddUserContextType | null>(null);
@@ -25,11 +35,29 @@ const AddUserContextProvider: FC<AddUserContextProviderPropsType> = ({
   children,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState<UserType[]>([]);
+
+  useEffect(() => {
+    const fetchAllUser = async () => {
+      setLoading(true);
+
+      try {
+        setUsers(await getAllUser());
+      } catch (e) {
+        console.error('ERROR fetching users', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllUser();
+  }, []);
   return (
     <AddUserContext
       value={{
         loading,
         setLoading,
+        users,
       }}
     >
       {children}

@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import type { UserType } from '@/@types/user.types';
 
 type UseContactsType = {
-  contacts: Record<UserType['_id'], UserType> | null;
+  contacts: Record<string, UserType>;
 };
 
 const useContacts = create<UseContactsType>(() => ({
-  contacts: null,
+  contacts: {},
 }));
 
 const { setState: set } = useContacts;

@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { type FC, useEffect, useRef } from 'react';
 import type { ChatType } from '@/@types/chat.types';
 import type { UserType } from '@/@types/user.types';
-import { db } from '@/db/dexie';
+import { db } from '@/db/main';
 import useMessages from '@/store/messages.store';
 import useUser from '@/store/user.store';
 import ChatListUI from '../../ui/chat/list';

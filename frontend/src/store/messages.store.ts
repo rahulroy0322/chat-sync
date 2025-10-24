@@ -2,9 +2,9 @@ import { create } from 'zustand';
 import type { MessageType } from '@/@types/message.types';
 
 type UseMessagesType = {
-  selectedMsg: string | null;
+  selectedMsg: MessageType | null;
   isSettingOpen: boolean;
-  messages: Record<MessageType['_id'], MessageType> | null;
+  messages: MessageType[] | null;
 };
 
 const useMessages = create<UseMessagesType>(() => ({
@@ -35,11 +35,23 @@ const toggleSetting = () =>
     isSettingOpen: !get().isSettingOpen,
   });
 
-const setMessages = (messages: UseMessagesType['messages']) =>
+const setMessages = (messages: MessageType[]) =>
   set({
     messages,
   });
 
-export { setMsgId, setMessages, openSetting, closeSetting, toggleSetting };
+const addMessage = (message: MessageType) =>
+  set(({ messages }) => ({
+    messages: [...(messages || []), message],
+  }));
+
+export {
+  setMsgId,
+  setMessages,
+  openSetting,
+  closeSetting,
+  toggleSetting,
+  addMessage,
+};
 
 export default useMessages;
