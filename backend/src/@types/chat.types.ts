@@ -1,4 +1,3 @@
-import type { MSGType } from './message.types';
 import type { ModelType } from './model.types';
 import type { UserType } from './user.types';
 
@@ -21,7 +20,6 @@ type ChatType = {
   receiver: UserType['_id'];
   status: ChatStatusType;
   editedAt: Date | null;
-  msgId: MSGType['_id'];
 
   attached?: string;
 } & ChatTypeandTextType;

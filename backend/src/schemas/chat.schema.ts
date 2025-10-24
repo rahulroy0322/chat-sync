@@ -12,6 +12,9 @@ const statusSchema = J.string<ChatStatusType[]>()
 
 const baseChatSchema = {
   status: statusSchema.default('sent' satisfies ChatStatusType),
+  receiver: J.string().required().messages({
+    'string.required': 'Receiver is required',
+  }),
 };
 
 // Text message schema
@@ -61,14 +64,30 @@ const createChatSchema = J.alternatives<ChatType>().try(
 //   'alternatives.match': 'Invalid chat format',
 // });
 
-type UpdateStatuSchemaType = {
-  chatIds: string[];
-  status: 'reached' | 'read';
+
+type UpdateChatsSchemaType = {
+  chats: ChatType[];
 };
 
-const updateStatuSchema = J.object<UpdateStatuSchemaType>({
-  chatIds: J.array().items(J.string()).required(),
-  status: J.string().valid(...(['reached', 'read'] satisfies ChatStatusType[])),
+const updateChatsSchema = J.object<UpdateChatsSchemaType>({
+  chats: J.array()
+    .items(
+      J.object<ChatType>({
+        ...baseChatSchema,
+        _id: J.string().required(),
+        type: J.string().valid('text').required(),
+        text: J.string().min(1).max(5000).required().messages({
+          'string.empty': 'Text cannot be empty',
+          'string.min': 'Text must be at least 1 character',
+          'string.max': 'Text cannot exceed 5000 characters',
+          'any.required': 'Text is required for text messages',
+        }),
+        attached: J.any().optional(),
+        // ! TODO
+        editedAt: J.any().optional(),
+      })
+    )
+    .required(),
 });
 
-export { createChatSchema, updateStatuSchema };
+export { createChatSchema, updateChatsSchema };

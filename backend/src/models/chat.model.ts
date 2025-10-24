@@ -49,13 +49,6 @@ const ChatSchema = new Schema<ChatModelType>(
       default: null,
     },
     // @ts-expect-error
-    msgId: {
-      type: Schema.Types.ObjectId,
-      ref: models.msg,
-      required: [true, 'Message ID is required'],
-      index: true,
-    },
-    // @ts-expect-error
     sender: {
       type: Schema.Types.ObjectId,
       ref: models.user,

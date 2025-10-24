@@ -2,10 +2,12 @@ import type { RequestHandler } from 'express';
 import { Types } from 'mongoose';
 import type { ResType } from '../@types/res.types';
 import { STATUS } from '../constants/status.constants';
-import { NotFoundError } from '../error/app.error';
+import { NotFoundError, ValueError } from '../error/app.error';
 import logger from '../logger/log';
-import { findChats } from '../services/chat.service';
+import { updateChatsSchema } from '../schemas/chat.schema';
+import { findChats, updateOrCreateChats } from '../services/chat.service';
 import { findUsers } from '../services/user.service';
+import { formatJoiError, validateJoi } from '../utils/joi';
 import { userRequired } from '../utils/user';
 
 const syncChatsGetController: RequestHandler = async (req, res) => {
@@ -27,6 +29,46 @@ const syncChatsGetController: RequestHandler = async (req, res) => {
   if (!chats) {
     throw new NotFoundError('something went wrong!');
   }
+  if ('error' in chats) {
+    logger.error(
+      chats.error,
+      'ERROR fetching chats in "syncChatsGetController"'
+    );
+    throw new NotFoundError('some error happeden!');
+  }
+
+  res.status(STATUS.CREATED).json({
+    success: true,
+    data: {
+      chats,
+    },
+  } satisfies ResType);
+};
+
+const syncChatsPatchController: RequestHandler = async (req, res) => {
+  userRequired(req);
+
+  const { warning, error, value } = validateJoi(updateChatsSchema, req.body);
+
+  if (warning) {
+    logger.warn(
+      formatJoiError(warning),
+      'WARNING in updateChatStatusController!'
+    );
+  }
+
+  if (error) {
+    const _error = formatJoiError(error);
+    console.error(_error, 'ERROR!: in updateChatStatusController');
+    throw new ValueError(error.message);
+  }
+
+  const chats = await updateOrCreateChats(value.chats);
+
+  if (!chats) {
+    throw new NotFoundError('something went wrong!');
+  }
+
   if ('error' in chats) {
     logger.error(
       chats.error,
@@ -69,4 +111,8 @@ const syncUsersController: RequestHandler = async (req, res) => {
   } satisfies ResType);
 };
 
-export { syncChatsGetController, syncUsersController };
+export {
+  syncChatsGetController,
+  syncChatsPatchController,
+  syncUsersController,
+};

@@ -1,20 +1,18 @@
 import { Router } from 'express';
 import {
   createChatController,
-  getChatsByMsgIdController,
-  updateChatStatusController,
+  getChatsController,
+  updateChatsController,
 } from '../controllers/chat.controller';
 import { authRequiredMiddleware } from '../middlewares/auth.middleware';
 
 const chatRouter: Router = Router();
 
 chatRouter
-  .route('/msg/:id')
+  .route('/')
   .post(authRequiredMiddleware, createChatController)
-  .get(authRequiredMiddleware, getChatsByMsgIdController);
+  .get(authRequiredMiddleware, getChatsController)
+  .patch(authRequiredMiddleware, updateChatsController);
 
-chatRouter
-  .route('/status')
-  .patch(authRequiredMiddleware, updateChatStatusController);
 
 export default chatRouter;
