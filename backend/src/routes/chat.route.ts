@@ -14,5 +14,4 @@ chatRouter
   .get(authRequiredMiddleware, getChatsController)
   .patch(authRequiredMiddleware, updateChatsController);
 
-
 export default chatRouter;

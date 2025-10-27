@@ -1,20 +1,16 @@
 import type { RequestHandler } from 'express';
 import type { ObjectSchema } from 'joi';
+import { Types } from 'mongoose';
 import type { ChatType } from '../@types/chat.types';
 import type { ResType } from '../@types/res.types';
 import { STATUS } from '../constants/status.constants';
 import { NotFoundError, ValueError } from '../error/app.error';
 import logger from '../logger/log';
 import { createChatSchema, updateChatsSchema } from '../schemas/chat.schema';
-import {
-  createChat,
-  findChats,
-  updateChats,
-} from '../services/chat.service';
+import { createChat, findChats, updateChats } from '../services/chat.service';
+import { findUsers } from '../services/user.service';
 import { formatJoiError, validateJoi } from '../utils/joi';
 import { userRequired } from '../utils/user';
-import { Types } from 'mongoose';
-import { findUsers } from '../services/user.service';
 
 const createChatController: RequestHandler = async (req, res) => {
   const user = userRequired(req);
@@ -71,7 +67,6 @@ const getChatsController: RequestHandler = async (req, res) => {
     ],
   });
 
-
   if (!chats) {
     throw new NotFoundError('something went wrong!');
   }
@@ -99,7 +94,6 @@ const getChatsController: RequestHandler = async (req, res) => {
     logger.error(users.error, 'ERROR creating chat in "getChatsController"');
     throw new NotFoundError('some error happeden!');
   }
-
 
   res.status(STATUS.OK).json({
     success: true,
@@ -142,8 +136,4 @@ const updateChatsController: RequestHandler = async (req, res) => {
     },
   } satisfies ResType);
 };
-export {
-  createChatController,
-  updateChatsController,
-  getChatsController,
-};
+export { createChatController, updateChatsController, getChatsController };

@@ -1,7 +1,7 @@
+import { type FC, useMemo } from 'react';
 import useContacts from '@/store/contact.store';
 import useMessages, { openSetting } from '@/store/messages.store';
 import useUser from '@/store/user.store';
-import { type FC, useMemo } from 'react';
 import ChatHeaderUI from '../../ui/chat/header';
 
 const date = '2022-10-04T13:45:41.869Z';
@@ -38,8 +38,8 @@ const ChatHeader: FC = () => {
     <ChatHeaderUI
       avatarUrl={avatarUrl}
       lastSeen={date}
-      uname={uname}
       onClick={handleHeaderClick}
+      uname={uname}
     />
   );
 };

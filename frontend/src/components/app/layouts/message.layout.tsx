@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { db } from '@/db/main';
 import useChats from '@/store/chat.store';
 import useContacts from '@/store/contact.store';
+import useSocket from '@/store/io.store';
 import useMessages, { setMsgId } from '@/store/messages.store';
 import useSettings, { setContactOpen } from '@/store/settings.store';
 import AddUsersList from '../logic/new-message';
@@ -24,10 +25,10 @@ const LayoutLink: FC<LayoutLinkPropsType> = ({ msg, children }) => {
   }, [msg]);
 
   return (
-    // biome-ignore lint/a11y/useButtonType: is not ay ready button
     <button
       className='flex gap-2 items-center p-1 cursor-pointer w-full'
       onClick={handleClick}
+      type='button'
     >
       {children}
     </button>
@@ -38,12 +39,14 @@ type MassageItemPropsType = {
   msg: MessageType;
   lastChat: ChatType | null;
   user: UserType;
+  isOnline: boolean;
 };
 
 const MassageItem: FC<MassageItemPropsType> = ({
   msg,
   user: { _id: uid, avatarUrl, uname },
   lastChat,
+  isOnline,
 }) => {
   return (
     <li>
@@ -51,6 +54,7 @@ const MassageItem: FC<MassageItemPropsType> = ({
         <Avatar
           alt={uname}
           className='size-10'
+          isOnline={isOnline}
           url={avatarUrl}
         />
 
@@ -87,6 +91,8 @@ const MessagesList: FC = () => {
   const contacts = useContacts((state) => state.contacts);
   const chats = useChats((state) => state.chats);
 
+  const onlineUsers = useSocket((state) => state.onlineUsers);
+
   if (messages === undefined) {
     // TODO!
     return 'loading';
@@ -98,6 +104,7 @@ const MessagesList: FC = () => {
         {messages.map((msg) =>
           !contacts[msg._id] ? null : (
             <MassageItem
+              isOnline={onlineUsers.has(msg._id)}
               key={msg._id}
               lastChat={(msg.lastMsgId && chats[msg.lastMsgId]) || null}
               msg={msg}

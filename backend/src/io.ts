@@ -10,7 +10,7 @@ import { contactsSchema, toSchema } from './schemas/io.schema';
 import { verifyAccessToken } from './services/jwt.service';
 import { redis, setToRedis } from './services/redis.service';
 import { type GetTokenPropsType, getToken } from './utils/auth';
-import { getSocketKey, getUserKey, UTSK } from './utils/io';
+import { getSocketKey, getStatusKey, getUserKey, UTSK } from './utils/io';
 import { formatJoiError, validateJoi } from './utils/joi';
 
 const validateAndLog = <T>(
@@ -44,7 +44,7 @@ const validateAndLog = <T>(
   };
 };
 
-const typing = (socket: Socket) => {
+const _typing = (socket: Socket) => {
   let timer: ReturnType<typeof setTimeout>;
   socket.on('typing:start', (to) => {
     const res = validateAndLog(toSchema, to, 'typing:start');
@@ -113,12 +113,12 @@ io.on('connection', async (socket) => {
     logger.info({ id: socket.id }, 'connection');
     const user = socket.data.user;
 
-    socket.to(user.sub).emit('online', {
+    socket.to(getStatusKey(user.sub)).emit('online', {
       userId: user.sub,
       socketId: socket.id,
     });
 
-    typing(socket);
+    // typing(socket);
 
     socket.on('contacts', async (contacts) => {
       const res = validateAndLog(contactsSchema, contacts, 'contacts');
@@ -128,7 +128,7 @@ io.on('connection', async (socket) => {
       }
 
       const contactsIds = res.value.map((id) => {
-        socket.join(id);
+        socket.join(getStatusKey(id));
 
         return getUserKey(id);
       });
@@ -202,7 +202,7 @@ io.on('connection', async (socket) => {
 
     socket.on('disconnect', async () => {
       logger.info({ id: socket.id }, 'disconnect');
-      socket.to(user.sub).emit('offline', {
+      socket.to(getStatusKey(user.sub)).emit('offline', {
         userId: user.sub,
         socketId: socket.id,
       });

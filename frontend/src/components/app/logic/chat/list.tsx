@@ -28,16 +28,17 @@ const ChatList: FC = () => {
   const selectedMsg = useMessages((state) => state.selectedMsg);
 
   const chats = useLiveQuery(async () => {
-    if (!selectedMsg) {
+    if (!selectedMsg?._id) {
       return null;
     }
 
     return await db.chats
-      .where({
-        msgId: selectedMsg,
-      })
+      .where('sender')
+      .equals(selectedMsg._id)
+      .or('receiver')
+      .equals(selectedMsg._id)
       .sortBy('createdAt');
-  }, [selectedMsg]);
+  }, [selectedMsg?._id]);
 
   const user = useUser((state) => state.user);
 

@@ -64,7 +64,6 @@ const createChatSchema = J.alternatives<ChatType>().try(
 //   'alternatives.match': 'Invalid chat format',
 // });
 
-
 type UpdateChatsSchemaType = {
   chats: ChatType[];
 };

@@ -12,9 +12,11 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { sendChat } from '@/api/chat.api';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import useChats from '@/store/chat.store';
+import useSocket from '@/store/io.store';
 import useMessages from '@/store/messages.store';
 import useUser from '@/store/user.store';
 import {
@@ -22,10 +24,10 @@ import {
   ChatInputMainWrapperUI,
   ChatInputUI,
 } from '../../ui/chat/input';
-import { sendChat } from '@/api/chat.api';
 
 const ChatInput: FC = () => {
-   const msg = useMessages((state) => state.selectedMsg);
+  const io = useSocket((state) => state.io);
+  const msg = useMessages((state) => state.selectedMsg);
   const isSending = useChats((state) => state.isSending);
   const [text, setText] = useState('');
 
@@ -33,7 +35,7 @@ const ChatInput: FC = () => {
     return !text || isSending;
   }, [isSending, text]);
 
-  const handleMsgSubmit = () => {
+  const handleMsgSubmit = async () => {
     if (!text.trim()) return;
     const userId = useUser.getState().user?._id;
 
@@ -41,12 +43,17 @@ const ChatInput: FC = () => {
       return;
     }
 
-    sendChat({
+    setText('');
+    const chat = await sendChat({
       msg,
       userId,
       text,
     });
-    setText('');
+    if (!io) {
+      return;
+    }
+
+    io.emit('chat', msg._id, chat);
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +118,5 @@ const ChatInput: FC = () => {
     </ChatInputMainWrapperUI>
   );
 };
-
-
 
 export default ChatInput;

@@ -56,6 +56,26 @@ const sendChat = async ({
       lastMsgId: _chat._id,
     });
   }
+  return _chat;
 };
 
-export { sendChat };
+const updateChats = async (_chats: ChatType[]) => {
+  try {
+    const { chats } = await req<{ chats: ChatType[] }>(`chat/`, {
+      method: 'PATCH',
+      body: {
+        chats: _chats,
+      },
+    });
+
+    await db.chats.bulkUpdate(
+      chats.map((chat) => ({
+        key: chat._id,
+        changes: chat,
+      }))
+    );
+  } catch (e) {
+    console.error('ERROR sending chat:', e);
+  }
+};
+export { sendChat, updateChats };

@@ -1,18 +1,12 @@
 import type { UserType } from '@/@types/user.types';
+import { req } from './main';
 
 const getAllUser = async () => {
-  return await Promise.resolve([
-    {
-      _id: '1',
-      avatarUrl: '/profile.gif',
-      uname: 'user2',
-    },
-    {
-      _id: '2',
-      avatarUrl: '/profile.gif',
-      uname: 'user3',
-    },
-  ] satisfies UserType[]);
+  const { users } = await req<{
+    users: UserType[];
+  }>('/user');
+
+  return users;
 };
 
 export { getAllUser };
