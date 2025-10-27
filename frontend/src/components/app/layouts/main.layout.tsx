@@ -4,11 +4,13 @@ import { type FC, useEffect } from 'react';
 import type { ChatType } from '@/@types/chat.types';
 import type { MessageType } from '@/@types/message.types';
 import type { UserType } from '@/@types/user.types';
+import { updateChats } from '@/api/chat.api';
 import { req } from '@/api/main';
 import { Tabs } from '@/components/ui/tabs';
 import { db } from '@/db/main';
 import { setChats } from '@/store/chat.store';
 import { setContacts } from '@/store/contact.store';
+import useSocket from '@/store/io.store';
 import { setMsgId } from '@/store/messages.store';
 import useUser from '@/store/user.store';
 import CallTab from '@/tabs/call.tabs';
@@ -255,7 +257,7 @@ const SyncChatsStatusToDb: FC = () => {
       return [];
     }
 
-    db.chats
+    return db.chats
       .where('receiver')
       .equals(user._id)
       .and((chat) => chat.status === 'sent')
@@ -268,125 +270,32 @@ const SyncChatsStatusToDb: FC = () => {
       cont.abort();
     };
 
-    console.log({
-      chats,
-    });
+    if (!chats || !chats.length) {
+      return abort;
+    }
 
-    // const getAllChats = async () => {
-    //   const user = useUser.getState().user;
-    //   if (!user) {
-    //     return abort;
-    //   }
-    //   try {
-    //     const { chats, users } = await req<{
-    //       chats: ChatType[];
-    //       users: UserType[];
-    //     }>('/chat/', undefined, cont.signal);
+    const syncStatus = async () => {
+      const updatedChats = chats.map(
+        (chat) =>
+          ({
+            ...chat,
+            status: 'reached',
+          }) satisfies ChatType
+      );
+      await updateChats(updatedChats);
 
-    //     const existUsers = await db.contacts
-    //       .where('_id')
-    //       .anyOf(users.map(({ _id }) => _id))
-    //       .toArray();
+      const io = useSocket.getState().io;
 
-    //     const newUsers = getNewUsers(existUsers, users);
+      if (!io) {
+        return;
+      }
 
-    //     if (newUsers.length) {
-    //       await db.contacts.bulkAdd(newUsers);
-    //       await db.messages.bulkAdd(
-    //         newUsers.map(
-    //           ({ _id }) =>
-    //             ({
-    //               _id,
-    //               lastMsgId: null,
-    //             }) satisfies MessageType
-    //         )
-    //       );
-    //     }
+      updatedChats.forEach((chat) => {
+        io?.emit('chat-status', chat.sender, chat);
+      });
+    };
 
-    //     const { newChats, oldChats, lastChats } = chats.reduce(
-    //       (acc, value) => {
-    //         if (value.status === 'sent' && user._id === value.receiver) {
-    //           acc.newChats.push(value);
-    //         } else {
-    //           acc.oldChats.push({
-    //             key: value._id,
-    //             changes: value,
-    //           });
-    //         }
-
-    //         const msgid = value.sender === user._id ? user._id : value.receiver;
-    //         const msg = acc.lastChats[msgid];
-
-    //         if (!msg) {
-    //           acc.lastChats[msgid] = {
-    //             key: msgid,
-    //             changes: {
-    //               lastMsgId: value._id,
-    //             },
-    //           };
-    //         } else {
-    //           // ! TODO
-    //           acc.lastChats[msgid] = {
-    //             key: msgid,
-    //             changes: {
-    //               lastMsgId: value._id,
-    //             },
-    //           };
-    //         }
-
-    //         return acc;
-    //       },
-    //       {
-    //         newChats: [],
-    //         oldChats: [],
-    //         lastChats: {},
-    //       } as {
-    //         newChats: ChatType[];
-    //         oldChats: {
-    //           key: string;
-    //           changes: UpdateSpec<ChatType>;
-    //         }[];
-    //         lastChats: Record<
-    //           string,
-    //           {
-    //             key: string;
-    //             changes: UpdateSpec<MessageType>;
-    //           }
-    //         >;
-    //       }
-    //     );
-
-    //     if (newChats.length) {
-    //       const { chats } = await req<{
-    //         chats: ChatType[];
-    //       }>(
-    //         '/chat/',
-    //         {
-    //           method: 'PATCH',
-    //           body: {
-    //             chats: newChats.map(
-    //               (chat) =>
-    //                 ({
-    //                   ...chat,
-    //                   status: 'reached',
-    //                 }) satisfies ChatType
-    //             ),
-    //           },
-    //         },
-    //         cont.signal
-    //       );
-
-    //       await db.chats.bulkAdd(chats);
-    //     }
-
-    //     await db.chats.bulkUpdate(oldChats);
-    //     await db.messages.bulkUpdate(Object.values(lastChats));
-    //   } catch (e) {
-    //     console.error('error: -> ', e);
-    //   }
-    // };
-
-    // getAllChats();
+    syncStatus();
 
     return abort;
   }, [chats]);
@@ -432,32 +341,25 @@ const SyncToDb: FC = () => {
           );
         }
 
-        const { newChats, oldChats, lastChats } = chats.reduce(
+        const lastChats = chats.reduce(
           (acc, value) => {
-            if (value.status === 'sent' && user._id === value.receiver) {
-              acc.newChats.push(value);
-            } else {
-              acc.oldChats.push({
-                key: value._id,
-                changes: value,
-              });
-            }
-
             const msgid = value.sender === user._id ? user._id : value.receiver;
-            const msg = acc.lastChats[msgid];
+            const msg = acc[msgid];
 
             if (!msg) {
-              acc.lastChats[msgid] = {
+              acc[msgid] = {
                 key: msgid,
                 changes: {
+                  _id: msgid,
                   lastMsgId: value._id,
                 },
               };
             } else {
               // ! TODO
-              acc.lastChats[msgid] = {
+              acc[msgid] = {
                 key: msgid,
                 changes: {
+                  _id: msgid,
                   lastMsgId: value._id,
                 },
               };
@@ -465,51 +367,27 @@ const SyncToDb: FC = () => {
 
             return acc;
           },
-          {
-            newChats: [],
-            oldChats: [],
-            lastChats: {},
-          } as {
-            newChats: ChatType[];
-            oldChats: {
+          {} as Record<
+            string,
+            {
               key: string;
-              changes: UpdateSpec<ChatType>;
-            }[];
-            lastChats: Record<
-              string,
-              {
-                key: string;
-                changes: UpdateSpec<MessageType>;
-              }
-            >;
-          }
+              changes: UpdateSpec<MessageType>;
+            }
+          >
         );
 
-        if (newChats.length) {
-          const { chats } = await req<{
-            chats: ChatType[];
-          }>(
-            '/chat/',
-            {
-              method: 'PATCH',
-              body: {
-                chats: newChats.map(
-                  (chat) =>
-                    ({
-                      ...chat,
-                      status: 'reached',
-                    }) satisfies ChatType
-                ),
-              },
-            },
-            cont.signal
-          );
-
-          await db.chats.bulkAdd(chats);
-        }
-
-        await db.chats.bulkUpdate(oldChats);
+        // TODO!
         await db.messages.bulkUpdate(Object.values(lastChats));
+
+        await db.transaction('rw', 'chats', async (t) => {
+          try {
+            return await Promise.all(
+              chats.map((chat) => t.chats.upsert(chat._id, chat))
+            );
+          } catch {
+            t.abort();
+          }
+        });
       } catch (e) {
         console.error('error: -> ', e);
       }
