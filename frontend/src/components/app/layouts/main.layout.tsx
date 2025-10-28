@@ -24,28 +24,30 @@ import type { SideBarUITabsKeysType } from '../ui/sidebar';
 const SyncMessages: FC = () => {
   const messaages = useLiveQuery(() => db.messages.toArray());
 
-  useEffect(() => {
+  const chats = useLiveQuery(async () => {
     if (!messaages) {
+      return [];
+    }
+
+    const msgIds = messaages
+      .map(({ lastMsgId }) => lastMsgId)
+      .filter((id) => typeof id === 'string');
+
+    return await db.chats.where('_id').anyOf(msgIds).toArray();
+  }, [messaages]);
+
+  useEffect(() => {
+    if (!chats || !chats.length) {
       return;
     }
-    const syncLastChats = async () => {
-      const msgIds = messaages
-        .map(({ lastMsgId }) => lastMsgId)
-        .filter((id) => typeof id === 'string');
+    const _chats: Record<string, ChatType> = {};
 
-      const chats = await db.chats.where('_id').anyOf(msgIds).toArray();
+    chats.forEach((chat) => {
+      _chats[chat._id] = chat;
+    });
 
-      const _chats: Record<string, ChatType> = {};
-
-      chats.forEach((chat) => {
-        _chats[chat._id] = chat;
-      });
-
-      setChats(_chats);
-    };
-
-    syncLastChats();
-  }, [messaages]);
+    setChats(_chats);
+  }, [chats]);
 
   return null;
 };
@@ -377,8 +379,6 @@ const SyncToDb: FC = () => {
           >
         );
 
-        await db.messages.bulkUpdate(Object.values(lastChats));
-
         await db.transaction('rw', 'chats', async (t) => {
           try {
             return await Promise.all(
@@ -388,6 +388,8 @@ const SyncToDb: FC = () => {
             t.abort();
           }
         });
+
+        await db.messages.bulkUpdate(Object.values(lastChats));
       } catch (e) {
         console.error('error: -> ', e);
       }

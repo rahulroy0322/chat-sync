@@ -47,7 +47,7 @@ const ChatList: FC = () => {
       return [];
     }
     return chats.filter(({ status, sender }) => {
-      if (sender === selectedMsg._id) {
+      if (sender !== selectedMsg._id) {
         return false;
       }
 
