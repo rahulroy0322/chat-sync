@@ -343,7 +343,8 @@ const SyncToDb: FC = () => {
 
         const lastChats = chats.reduce(
           (acc, value) => {
-            const msgid = value.sender === user._id ? user._id : value.receiver;
+            const msgid =
+              value.sender === user._id ? value.receiver : value.sender;
             const msg = acc[msgid];
 
             if (!msg) {
@@ -376,7 +377,6 @@ const SyncToDb: FC = () => {
           >
         );
 
-        // TODO!
         await db.messages.bulkUpdate(Object.values(lastChats));
 
         await db.transaction('rw', 'chats', async (t) => {
