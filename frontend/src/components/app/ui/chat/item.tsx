@@ -13,7 +13,7 @@ type ChatTimePropsType = {
 
 type ChatBottomPropsType = {
   time: string;
-  status: ChatStatusType|null;
+  status: ChatStatusType | null;
 };
 
 type ChatUserNamePropsType = {
@@ -69,13 +69,12 @@ const ChatTime: FC<ChatTimePropsType> = ({ time }) => (
 const ChatBottom: FC<ChatBottomPropsType> = ({ time, status }) => (
   <div className='flex gap-1.5 items-center justify-end'>
     <ChatTime time={time} />
-    {
-      !status ?null:
-    <StatusIcon
-      className='size-4 text-muted-foreground'
-      status={status}
-    />
-    }
+    {!status ? null : (
+      <StatusIcon
+        className='size-4 text-muted-foreground'
+        status={status}
+      />
+    )}
   </div>
 );
 
