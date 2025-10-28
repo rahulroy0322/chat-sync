@@ -114,8 +114,9 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
+  body,
+  #root {
+    @apply bg-background text-foreground min-h-screen min-w-screen;
   }
 
   .shadow-md-input {

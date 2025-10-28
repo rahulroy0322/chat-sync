@@ -1,11 +1,12 @@
 import type { FC } from 'react';
+import Loading from '../../ui/loading';
 import useAddUserContext, { AddUserContextProvider } from './context';
 import UserItem from './item';
 
 const AddUsersListImpl: FC = () => {
   const { users, loading } = useAddUserContext();
   if (loading) {
-    return 'loading...';
+    return <Loading size='base' />;
   }
   return (
     <ul>

@@ -14,6 +14,7 @@ import useSettings, { setContactOpen } from '@/store/settings.store';
 import AddUsersList from '../logic/new-message';
 import Avatar from '../ui/avatar';
 import HeaderUI from '../ui/header';
+import Loading from '../ui/loading';
 import StatusIcon from '../ui/status-icon';
 import MessagesLayoutLogic from './message-adaptive.layout';
 
@@ -94,8 +95,7 @@ const MessagesList: FC = () => {
   const onlineUsers = useSocket((state) => state.onlineUsers);
 
   if (messages === undefined) {
-    // TODO!
-    return 'loading';
+    return <Loading size='base' />;
   }
 
   return (

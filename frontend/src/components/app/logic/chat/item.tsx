@@ -5,6 +5,7 @@ import ChatItemUI from '../../ui/chat/item';
 
 type ChatItemPropsType = {
   user: UserType;
+  isOnline: boolean;
 } & ChatType;
 
 // TODO!

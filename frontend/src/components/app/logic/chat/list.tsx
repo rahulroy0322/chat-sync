@@ -15,16 +15,20 @@ type ListImplPropsType = {
   user: UserType;
 };
 
-const ListImpl: FC<ListImplPropsType> = ({ chats, user }) =>
-  chats.map((chat) => (
+const ListImpl: FC<ListImplPropsType> = ({ chats, user }) => {
+  const onlineUsers = useSocket((state) => state.onlineUsers);
+
+  return chats.map((chat) => (
     <ChatItem
+      isOnline={chat.sender === user._id ? true : onlineUsers.has(chat.sender)}
       user={user}
       {...chat}
       key={chat._id}
     />
   ));
+};
 
-const ChatList: FC = () => {
+const ChatListImpl: FC = () => {
   const endRef = useRef<HTMLSpanElement>(null);
 
   const selectedMsg = useMessages((state) => state.selectedMsg);
@@ -105,17 +109,23 @@ const ChatList: FC = () => {
   }
 
   return (
-    <ChatListUI>
-      {user && chats ? (
-        <ListImpl
-          chats={chats}
-          user={user}
-        />
-      ) : null}
+    <>
+      <ListImpl
+        chats={chats}
+        user={user}
+      />
       <span
         className='block'
         ref={endRef}
       />
+    </>
+  );
+};
+
+const ChatList: FC = () => {
+  return (
+    <ChatListUI>
+      <ChatListImpl />
     </ChatListUI>
   );
 };

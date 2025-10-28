@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { toast } from 'sonner';
 import { login } from '@/api';
 import { Button } from '@/components/ui/button';
 import useUser from '@/store/user.store';
@@ -35,41 +36,50 @@ const AuthPage: FC = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
 
     if (email && password) {
-      try {
-        setLoading(true);
-        const _data = await login({
-          email,
-          password,
-        });
-        if ('error' in _data) {
-          throw _data.error;
+      toast.promise(
+        () =>
+          new Promise(async (res, rej) => {
+            try {
+              setLoading(true);
+              const _data = await login({
+                email,
+                password,
+              });
+
+              if ('error' in _data) {
+                return rej(_data.error as Error);
+              }
+
+              const {
+                data: {
+                  token: { access, refresh },
+                  user,
+                },
+              } = _data;
+
+              useUser.setState({
+                user,
+                refreshToken: refresh,
+                token: access,
+              });
+              res(null);
+            } finally {
+              setLoading(false);
+            }
+          }),
+        {
+          loading: 'Loading...',
+          success: () => 'Login Success...',
+          error: (e: Error) => e.message,
         }
-
-        const {
-          data: {
-            token: { access, refresh },
-            user,
-          },
-        } = _data;
-
-        useUser.setState({
-          user,
-          refreshToken: refresh,
-          token: access,
-        });
-      } catch (e) {
-        // TODO?
-        console.error('e', e);
-      } finally {
-        setLoading(false);
-      }
+      );
     }
   };
 

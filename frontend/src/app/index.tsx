@@ -1,6 +1,7 @@
 import { type FC, useEffect } from 'react';
 import { refreshToken } from '@/api';
 import MainLayout from '@/components/app/layouts/main.layout';
+import Loading from '@/components/app/ui/loading';
 import AuthPage from '@/pages/auth.page';
 import useUser, { setLoading } from '@/store/user.store';
 
@@ -37,8 +38,11 @@ const App: FC = () => {
   }
 
   if (isLoading || !token) {
-    // ? TODO
-    return 'loading...';
+    return (
+      <div className='h-screen'>
+        <Loading />
+      </div>
+    );
   }
 
   return <MainLayout />;

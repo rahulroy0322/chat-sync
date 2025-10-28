@@ -27,6 +27,7 @@ type ChatContentTextPropsType = {
 type ChatAvatarPropsType = {
   url: string;
   name: string;
+  isOnline: boolean;
 };
 
 type ChatContentImgPropsType = {
@@ -35,7 +36,10 @@ type ChatContentImgPropsType = {
 };
 type ChatContentPropsType = ChatTypeandTextType;
 
-type ChatOtherPropsType = Pick<UserType, 'uname' | 'avatarUrl'> & ChatType;
+type ChatOtherPropsType = Pick<UserType, 'uname' | 'avatarUrl'> &
+  ChatType & {
+    isOnline: boolean;
+  };
 
 type ChatIndicatorPropsType = {
   isMe: boolean;
@@ -49,6 +53,7 @@ type ChatContentWrapperPropsType = {
 
 type ChatItemUIPropsType = {
   user: UserType;
+  isOnline: boolean;
 } & ChatType;
 
 type ChatWrapperPropsType = { children: ReactNode; isFigure: boolean };
@@ -122,13 +127,11 @@ const ChatContentImg: FC<ChatContentImgPropsType> = ({ text, src }) => (
   </figure>
 );
 
-const ChatAvatar: FC<ChatAvatarPropsType> = ({ name, url }) => (
+const ChatAvatar: FC<ChatAvatarPropsType> = ({ name, ...props }) => (
   <Avatar
     alt={name}
     className='size-8'
-    //! TODO
-    isOnline
-    url={url}
+    {...props}
   />
 );
 
@@ -136,10 +139,12 @@ const ChatOther: FC<ChatOtherPropsType> = ({
   avatarUrl,
   uname,
   createdAt,
+  isOnline,
   ...props
 }) => (
   <ChatWrapper isFigure={props.type !== 'text'}>
     <ChatAvatar
+      isOnline={isOnline}
       name={uname}
       url={avatarUrl}
     />
@@ -162,6 +167,7 @@ const ChatMe: FC<ChatOtherPropsType> = ({
   uname,
   createdAt,
   status,
+  isOnline,
   ...props
 }) => (
   <ChatWrapper isFigure={props.type !== 'text'}>
@@ -176,6 +182,7 @@ const ChatMe: FC<ChatOtherPropsType> = ({
       />
     </ChatContentWrapper>
     <ChatAvatar
+      isOnline={isOnline}
       name={uname}
       url={avatarUrl}
     />
@@ -204,7 +211,7 @@ const ChatContentWrapper: FC<ChatContentWrapperPropsType> = ({
     className={cn(
       'relative bg-slate-300 dark:bg-slate-500 rounded-md px-3 py-2 space-y-1',
       {
-        '!bg-primary !text-primary-foreground': isMe,
+        'bg-primary! text-primary-foreground!': isMe,
         'rounded-bl-none': !isMe,
         'rounded-br-none': isMe,
         'w-full': isFigure,
@@ -220,7 +227,7 @@ const ChatContentWrapper: FC<ChatContentWrapperPropsType> = ({
 const ChatWrapper: FC<ChatWrapperPropsType> = ({ children, isFigure }) => (
   <div
     className={cn('flex items-end max-w-3/4 lg:max-w-3/5 gap-3.5 p-2', {
-      'w-3/4 !max-w-sm': isFigure,
+      'w-3/4 max-w-sm!': isFigure,
     })}
     role='presentation'
   >
