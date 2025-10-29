@@ -1,0 +1,14 @@
+{
+  "name": "chat-sync",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "husky": "9.1.7"
+  }
+}
