@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["*/src/**/*", "!frontend/src/components/ui/*", "!biome.json"]
+    "includes": ["*/src/**/*", "!frontend/src/components/ui/*", "package.json"]
   },
   "formatter": {
     "enabled": true,
