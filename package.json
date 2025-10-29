@@ -38,7 +38,7 @@
       "biome check --write"
     ],
     "*": [
-      "biome check "
+      "biome check --write"
     ]
   }
 }

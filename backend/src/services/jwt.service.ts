@@ -54,7 +54,7 @@ const verifyAccessToken = (
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, 'ERROR!: in verifyAccessToken');
+    logger.error(_error, 'ERROR!: in verifyAccessToken');
     throw new UnauthorizedError('invalid token send!');
   }
 
@@ -82,7 +82,7 @@ const verifyRefreshToken = (
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, 'ERROR!: in verifyAccessToken');
+    logger.error(_error, 'ERROR!: in verifyAccessToken');
     throw new UnauthorizedError('invalid token send!');
   }
 

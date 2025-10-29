@@ -36,14 +36,14 @@ const LayoutLink: FC<LayoutLinkPropsType> = ({ msg, children }) => {
   );
 };
 
-type MassageItemPropsType = {
+type MessageItemPropsType = {
   msg: MessageType;
   lastChat: ChatType | null;
   user: UserType;
   isOnline: boolean;
 };
 
-const MassageItem: FC<MassageItemPropsType> = ({
+const MessageItem: FC<MessageItemPropsType> = ({
   msg,
   user: { _id: uid, avatarUrl, uname },
   lastChat,
@@ -103,7 +103,7 @@ const MessagesList: FC = () => {
       <ul>
         {messages.map((msg) =>
           !contacts[msg._id] ? null : (
-            <MassageItem
+            <MessageItem
               isOnline={onlineUsers.has(msg._id)}
               key={msg._id}
               lastChat={(msg.lastMsgId && chats[msg.lastMsgId]) || null}

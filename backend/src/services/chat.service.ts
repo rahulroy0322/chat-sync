@@ -24,58 +24,6 @@ const createChat = async (data: ChatType): DbResType<ChatType, null> => {
   }
 };
 
-const validateId = (id: string) => {
-  try {
-    return new Types.ObjectId(id);
-  } catch {
-    return new Types.ObjectId();
-  }
-};
-
-const updateOrCreateChats = async (
-  data: ChatType[]
-): DbResType<ChatType[], null> => {
-  try {
-    const { operations, ids } = data.reduce(
-      (acc, chat) => {
-        const id = validateId(chat._id);
-        acc.operations.push({
-          updateOne: {
-            // ! todo
-            filter: { _id: id },
-            update: { $set: chat },
-            upsert: true,
-          },
-        });
-        acc.ids.push(id);
-        return acc;
-      },
-      {
-        operations: [] as {
-          updateOne: {
-            filter: { _id: Types.ObjectId };
-            update: { $set: ChatType };
-            upsert: true;
-          };
-        }[],
-        ids: [] as Types.ObjectId[],
-      }
-    );
-
-    await Chat.bulkWrite(operations);
-
-    return await Chat.find({ _id: { $in: ids } });
-  } catch (e) {
-    if (e instanceof DbError) {
-      return {
-        error: e,
-      };
-    }
-
-    return null;
-  }
-};
-
 const findChats = async (
   where: FilterQuery<ChatType>,
   projection?: ProjectionType<ChatType>,
@@ -93,32 +41,6 @@ const findChats = async (
     return null;
   }
 };
-
-// const findChatsByMsgId = async (id: string): DbResType<ChatType[], null> =>
-//   await findChats({
-//     msgId: id,
-//   });
-
-// const findOneAndUpdate = async (
-//   where: FilterQuery<ChatType>,
-//   data: UpdateQuery<ChatType>
-// ): DbResType<ChatType, null> => {
-//   try {
-//     return (
-//       await Chat.findOneAndUpdate(where, data, {
-//         new: true,
-//       }).populate('sender')
-//     )?.toJSON() as ChatType;
-//   } catch (e) {
-//     if (e instanceof DbError) {
-//       return {
-//         error: e,
-//       };
-//     }
-
-//     return null;
-//   }
-// };
 
 const updateChats = async (chats: ChatType[]): DbResType<ChatType[], null> => {
   try {
@@ -170,10 +92,4 @@ const updateChats = async (chats: ChatType[]): DbResType<ChatType[], null> => {
   }
 };
 
-export {
-  updateChats,
-  createChat,
-  findChats,
-  // findChatsByMsgId,
-  updateOrCreateChats,
-};
+export { updateChats, createChat, findChats };

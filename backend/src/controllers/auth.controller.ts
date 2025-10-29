@@ -87,7 +87,7 @@ const loginController: RequestHandler = async (req, res) => {
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, 'ERROR!: in login');
+    logger.error(_error, 'ERROR!: in login');
     throw new ValueError(error.message);
   }
 

@@ -32,7 +32,7 @@ const validateAndLog = <T>(
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, `ERROR!: in socket -> ${msg}`);
+    logger.error(_error, `ERROR!: in socket -> ${msg}`);
     return {
       success: false,
     };
