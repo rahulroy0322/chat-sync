@@ -1,1 +1,1 @@
-echo "testing..."
+npx lint-staged
