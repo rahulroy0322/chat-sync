@@ -129,7 +129,7 @@ const updateChatsController: RequestHandler = async (req, res) => {
     throw new NotFoundError('Error updating chat status!');
   }
 
-  res.status(STATUS.CREATED).json({
+  res.status(STATUS.OK).json({
     success: true,
     data: {
       chats,

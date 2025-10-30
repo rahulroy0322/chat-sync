@@ -30,8 +30,6 @@ const Socket: FC = () => {
 
   const token = useUser((state) => state.token);
 
-  const selectedMsg = useMessages((state) => state.selectedMsg);
-
   useEffect(() => {
     const ret = () => {
       io?.close();
@@ -65,9 +63,15 @@ const Socket: FC = () => {
         lastMsgId: chat._id,
       });
 
+      const msgId = useMessages.getState().selectedMsg?._id;
+
+      if (!msgId) {
+        return;
+      }
+
       const updatedChat = {
         ...chat,
-        status: chat.sender === selectedMsg?._id ? 'read' : 'reached',
+        status: chat.sender === msgId ? 'read' : 'reached',
       } satisfies ChatType;
 
       await db.chats.add(updatedChat);
@@ -82,7 +86,7 @@ const Socket: FC = () => {
     return () => {
       io?.off('chat', onChat);
     };
-  }, [io, selectedMsg?._id]);
+  }, [io]);
 
   useEffect(() => {
     const onChatStatus = async (chat: ChatType) => {

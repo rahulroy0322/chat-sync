@@ -48,6 +48,7 @@ const updateChats = async (chats: ChatType[]): DbResType<ChatType[], null> => {
       (acc, { _id: id, ...chat }) => {
         const _id = new Types.ObjectId(id);
 
+        acc.ids.push(_id);
         acc.ops.push({
           updateOne: {
             filter: { _id },

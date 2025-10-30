@@ -343,30 +343,52 @@ const SyncToDb: FC = () => {
           );
         }
 
+        const _Chats = {} as Record<ChatType['_id'], ChatType>;
+
         const lastChats = chats.reduce(
           (acc, value) => {
             const msgid =
               value.sender === user._id ? value.receiver : value.sender;
             const msg = acc[msgid];
 
+            const setValueToAcc = (
+              msgid: string,
+              value: {
+                _id: string;
+              }
+            ) => {
+              acc[msgid] = {
+                key: msgid,
+                changes: {
+                  _id: msgid,
+                  lastMsgId: value._id,
+                },
+              };
+            };
+
             if (!msg) {
-              acc[msgid] = {
-                key: msgid,
-                changes: {
-                  _id: msgid,
-                  lastMsgId: value._id,
-                },
-              };
+              setValueToAcc(msgid, value);
             } else {
-              // ! TODO
-              acc[msgid] = {
-                key: msgid,
-                changes: {
-                  _id: msgid,
-                  lastMsgId: value._id,
-                },
-              };
+              const oldChat = _Chats[msg.changes.lastMsgId as ChatType['_id']];
+
+              if (oldChat) {
+                if (new Date(oldChat.createdAt) < new Date(value.createdAt)) {
+                  setValueToAcc(msgid, value);
+                } else {
+                  setValueToAcc(msgid, oldChat);
+                }
+              } else {
+                // Should not raise
+                // just for extra sefty
+                setValueToAcc(msgid, value);
+                console.error(
+                  'error finding chat!',
+                  _Chats,
+                  msg.changes.lastMsgId
+                );
+              }
             }
+            _Chats[value._id] = value;
 
             return acc;
           },
@@ -379,15 +401,7 @@ const SyncToDb: FC = () => {
           >
         );
 
-        await db.transaction('rw', 'chats', async (t) => {
-          try {
-            return await Promise.all(
-              chats.map((chat) => t.chats.upsert(chat._id, chat))
-            );
-          } catch {
-            t.abort();
-          }
-        });
+        await db.chats.bulkPut(chats);
 
         await db.messages.bulkUpdate(Object.values(lastChats));
       } catch (e) {
