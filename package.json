@@ -1,0 +1,44 @@
+{
+  "name": "chat-sync",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "concurrently \"npm run build:server\" \"npm run build:app\"",
+    "build:server": "cd backend && npm run build",
+    "build:app": "cd frontend && npm run build",
+    "check": "biome check",
+    "check:fix": "biome check --write",
+    "commitlint": "commitlint --edit",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:app\"",
+    "dev:server": "cd backend && npm run dev",
+    "dev:app": "cd frontend && npm run dev",
+    "format": "biome format",
+    "format:fix": "biome format --write",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "prepare": "husky",
+    "start": "concurrently \"npm run start:server\" \"npm run start:app\"",
+    "start:server": "cd backend && npm start",
+    "start:app": "cd frontend && npm run preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "2.3.2",
+    "@commitlint/cli": "20.1.0",
+    "@commitlint/config-conventional": "20.0.0",
+    "@commitlint/types": "20.0.0",
+    "concurrently": "^9.2.1",
+    "husky": "9.1.7",
+    "lint-staged": "16.2.6"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,json}": [
+      "biome check --write"
+    ],
+    "*": [
+      "biome check --write"
+    ]
+  }
+}

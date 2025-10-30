@@ -1,9 +1,12 @@
 import { type FC, useEffect } from 'react';
-import { refreshToken } from '@/api/auth';
+import { refreshToken } from '@/api';
 import MainLayout from '@/components/app/layouts/main.layout';
+import Loading from '@/components/app/ui/loading';
+import AuthPage from '@/pages/auth.page';
 import useUser, { setLoading } from '@/store/user.store';
 
 const App: FC = () => {
+  const token = useUser((state) => state.token);
   const user = useUser((state) => state.user);
   const isLoading = useUser((state) => state.isLoading);
 
@@ -30,16 +33,19 @@ const App: FC = () => {
     };
   }, []);
 
-  if (isLoading) {
-    // ? TODO
-    return 'loading...';
+  if (!user) {
+    return <AuthPage />;
   }
 
-  if (user) {
-    return <MainLayout />;
+  if (isLoading || !token) {
+    return (
+      <div className='h-screen'>
+        <Loading />
+      </div>
+    );
   }
 
-  return 'no user';
+  return <MainLayout />;
 };
 
 export default App;

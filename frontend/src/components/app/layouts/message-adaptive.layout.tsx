@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import { useIsMobile } from '@/hookes/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type MessagesLayoutImplPropsType = Readonly<{
   children: ReactNode;

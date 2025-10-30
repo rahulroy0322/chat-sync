@@ -1,11 +1,19 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
+import { Toaster } from 'sonner';
 import App from './app';
 
-// biome-ignore lint/style/noNonNullAssertion: this will exists in the dom
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+const root = document.getElementById('root');
+if (root) {
+  createRoot(root).render(
+    <StrictMode>
+      <App />
+      <Toaster
+        closeButton
+        position='bottom-right'
+        richColors
+      />
+    </StrictMode>
+  );
+}

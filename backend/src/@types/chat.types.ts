@@ -1,8 +1,7 @@
-import type { MSGType } from './message.types';
 import type { ModelType } from './model.types';
 import type { UserType } from './user.types';
 
-type ChatStatusType = 'send' | 'read' | 'riched';
+type ChatStatusType = 'sent' | 'read' | 'reached';
 
 type ChatTypeandTextType =
   | {
@@ -18,9 +17,9 @@ type ChatTypeandTextType =
 type ChatType = {
   _id: string;
   sender: UserType['_id'];
+  receiver: UserType['_id'];
   status: ChatStatusType;
   editedAt: Date | null;
-  msgId: MSGType['_id'];
 
   attached?: string;
 } & ChatTypeandTextType;

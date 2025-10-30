@@ -1,13 +1,13 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.2/schema.json",
   "vcs": {
-    "enabled": false,
+    "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["src/**/*", "!src/components/ui/*", "!biome.json"]
+    "includes": ["*/src/**/*", "!frontend/src/components/ui/*", "package.json"]
   },
   "formatter": {
     "enabled": true,
@@ -82,6 +82,11 @@
       "quoteStyle": "single",
       "semicolons": "always",
       "trailingCommas": "es5"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {

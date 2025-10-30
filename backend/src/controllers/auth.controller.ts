@@ -87,7 +87,7 @@ const loginController: RequestHandler = async (req, res) => {
 
   if (error) {
     const _error = formatJoiError(error);
-    console.error(_error, 'ERROR!: in login');
+    logger.error(_error, 'ERROR!: in login');
     throw new ValueError(error.message);
   }
 
@@ -111,7 +111,7 @@ const loginController: RequestHandler = async (req, res) => {
   const refresh = singRefreshToken(_user);
   const access = singAccessToken(_user);
 
-  res.json({
+  res.status(STATUS.OK).json({
     success: true,
     data: {
       user,
@@ -138,7 +138,7 @@ const refreshTokenController: RequestHandler = async (req, res) => {
   const refresh = singRefreshToken(user);
   const access = singAccessToken(user);
 
-  res.json({
+  res.status(STATUS.OK).json({
     success: true,
     data: {
       user,

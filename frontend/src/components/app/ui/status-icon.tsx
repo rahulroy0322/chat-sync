@@ -1,6 +1,7 @@
-import { Check, CheckCheck, Clock } from 'lucide-react';
+import { Check, CheckCheck, CircleAlert, Clock } from 'lucide-react';
 import type { FC } from 'react';
 import type { ChatStatusType } from '@/@types/status.types';
+import { cn } from '@/lib/utils';
 
 type StatusIconPropsType = {
   className: string;
@@ -8,11 +9,26 @@ type StatusIconPropsType = {
 };
 
 const StatusIcon: FC<StatusIconPropsType> = ({ status, ...props }) => {
-  if (status === 'read' || status === 'riched') {
-    return <CheckCheck {...props} />;
+  if (status === 'read' || status === 'reached') {
+    return (
+      <CheckCheck
+        {...props}
+        className={cn(props.className, {
+          'text-cyan-500': status === 'read',
+        })}
+      />
+    );
   }
-  if (status === 'send') {
+  if (status === 'sent') {
     return <Check {...props} />;
+  }
+  if (status === 'failed') {
+    return (
+      <CircleAlert
+        {...props}
+        className={cn('text-destructive', props.className)}
+      />
+    );
   }
   return <Clock {...props} />;
 };

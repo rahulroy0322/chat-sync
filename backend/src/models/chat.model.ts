@@ -1,18 +1,17 @@
 import { model, Schema } from 'mongoose';
-import type { ChatModelType } from '../@types/chat.types';
+import type {
+  ChatModelType,
+  ChatStatusType,
+  ChatTypeandTextType,
+} from '../@types/chat.types';
+import { models } from './main';
 
 const ChatSchema = new Schema<ChatModelType>(
   {
-    // @ts-expect-error
-    sender: {
-      type: Schema.Types.ObjectId,
-      ref: 'user',
-      required: [true, 'Sender is required'],
-    },
     type: {
       type: String,
       enum: {
-        values: ['text', 'img', 'vid'],
+        values: ['text', 'img', 'vid'] satisfies ChatTypeandTextType['type'][],
         message: '{VALUE} is not a valid type',
       },
       required: [true, 'Type is required'],
@@ -20,7 +19,7 @@ const ChatSchema = new Schema<ChatModelType>(
     text: {
       type: String,
       required: function () {
-        return (this.type as unknown as string) === 'text';
+        return this.type === 'text';
       },
     },
     url: {
@@ -40,21 +39,26 @@ const ChatSchema = new Schema<ChatModelType>(
     status: {
       type: String,
       enum: {
-        values: ['send', 'read', 'riched'],
+        values: ['sent', 'read', 'reached'] satisfies ChatStatusType[],
         message: '{VALUE} is not a valid status',
       },
-      default: 'send',
+      default: 'sent',
     },
     editedAt: {
       type: Date,
       default: null,
     },
     // @ts-expect-error
-    msgId: {
+    sender: {
       type: Schema.Types.ObjectId,
-      ref: 'message',
-      required: [true, 'Message ID is required'],
-      index: true,
+      ref: models.user,
+      required: [true, 'Sender is required'],
+    },
+    // @ts-expect-error
+    receiver: {
+      type: Schema.Types.ObjectId,
+      ref: models.user,
+      required: [true, 'Receiver is required'],
     },
   },
   {
@@ -63,6 +67,6 @@ const ChatSchema = new Schema<ChatModelType>(
   }
 );
 
-const Chat = model<ChatModelType>('chat', ChatSchema);
+const Chat = model<ChatModelType>(models.chat, ChatSchema);
 
 export default Chat;

@@ -1,5 +1,5 @@
-'use client';
 import { type FC, useMemo } from 'react';
+import useContacts from '@/store/contact.store';
 import useMessages, { openSetting } from '@/store/messages.store';
 import useUser from '@/store/user.store';
 import ChatHeaderUI from '../../ui/chat/header';
@@ -8,26 +8,16 @@ const date = '2022-10-04T13:45:41.869Z';
 
 const useContact = () => {
   const user = useUser((state) => state.user);
-  const messages = useMessages((state) => state.messages);
-  const selectedMsg = useMessages((state) => state.selectedMsg);
+  const message = useMessages((state) => state.selectedMsg);
+  const contacts = useContacts((state) => state.contacts);
 
   const contact = useMemo(() => {
-    if (!user || !messages || !selectedMsg) {
+    if (!user || !message) {
       return null;
     }
 
-    const msg = messages.find((msg) => msg._id === selectedMsg);
-    if (!msg) {
-      return null;
-    }
-
-    const otherUser = msg.users.find((u) => u._id !== user._id);
-    if (!otherUser) {
-      return null;
-    }
-
-    return otherUser;
-  }, [messages, selectedMsg, user]);
+    return contacts[message._id];
+  }, [user, message, contacts]);
 
   return contact;
 };
@@ -36,8 +26,6 @@ const ChatHeader: FC = () => {
   const contact = useContact();
 
   const handleHeaderClick = () => {
-    // biome-ignore lint/suspicious/noConsole:  cjxanscxlkna
-    console.log('opening setting');
     openSetting();
   };
 
@@ -50,8 +38,8 @@ const ChatHeader: FC = () => {
     <ChatHeaderUI
       avatarUrl={avatarUrl}
       lastSeen={date}
-      name={uname}
       onClick={handleHeaderClick}
+      uname={uname}
     />
   );
 };

@@ -1,4 +1,3 @@
-'use client';
 import {
   CircleUserRound,
   File,
@@ -13,48 +12,67 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { sendChat } from '@/api/chat.api';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import useChats, { sendChat } from '@/store/chat.store';
+import useChats from '@/store/chat.store';
+import useSocket from '@/store/io.store';
 import useMessages from '@/store/messages.store';
+import useUser from '@/store/user.store';
 import {
-  ChatInput2ndWraperUI,
-  ChatInputMainWraperUI,
+  ChatInputInnerWrapperUI,
+  ChatInputMainWrapperUI,
   ChatInputUI,
 } from '../../ui/chat/input';
 
 const ChatInput: FC = () => {
-  const isLoading = useChats((state) => state.isLoading || state.isSending);
-  // biome-ignore lint/style/noNonNullAssertion: It will be there
-  const msgId = useMessages((state) => state.selectedMsg)!;
-  const [msg, setMsg] = useState('');
+  const io = useSocket((state) => state.io);
+  const msg = useMessages((state) => state.selectedMsg);
+  const isSending = useChats((state) => state.isSending);
+  const [text, setText] = useState('');
 
   const isSendDisabled = useMemo(() => {
-    return !msg || isLoading;
-  }, [isLoading, msg]);
+    return !text || isSending;
+  }, [isSending, text]);
 
-  const handleMsgSubmit = () => {
-    if (!msg.trim()) return;
-    sendChat(msgId, msg);
-    setMsg('');
+  const handleMsgSubmit = async () => {
+    if (!text.trim()) return;
+    const userId = useUser.getState().user?._id;
+
+    if (!userId || !msg) {
+      return;
+    }
+
+    setText('');
+    const chat = await sendChat({
+      msg,
+      userId,
+      text,
+    });
+    if (!io) {
+      return;
+    }
+
+    io.emit('chat', msg._id, chat);
   };
 
   const handleInput = (e: ChangeEvent<HTMLInputElement>) => {
-    setMsg(e.target.value);
+    setText(e.target.value);
   };
 
-  const handleUp = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyUp = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key.toString().toLowerCase() === 'enter') {
       if (e.metaKey || e.ctrlKey) {
-        setMsg('');
+        setText('');
+        return;
       }
       handleMsgSubmit();
     }
   };
 
   return (
-    <ChatInputMainWraperUI>
-      <ChatInput2ndWraperUI>
+    <ChatInputMainWrapperUI>
+      <ChatInputInnerWrapperUI>
         <Button
           size='icon'
           variant='input'
@@ -63,8 +81,8 @@ const ChatInput: FC = () => {
         </Button>
         <ChatInputUI
           onChange={handleInput}
-          onKeyUp={handleUp}
-          value={msg}
+          onKeyUp={handleKeyUp}
+          value={text}
         />
         <Button
           size='icon'
@@ -80,7 +98,7 @@ const ChatInput: FC = () => {
         >
           <Mic2 />
         </Button>
-      </ChatInput2ndWraperUI>
+      </ChatInputInnerWrapperUI>
 
       <Button
         className={cn({
@@ -91,13 +109,13 @@ const ChatInput: FC = () => {
         size='icon'
         variant='input'
       >
-        {isLoading ? (
+        {isSending ? (
           <LoaderPinwheel className='animate-spin animation-duration-[750ms]' />
         ) : (
           <Send />
         )}
       </Button>
-    </ChatInputMainWraperUI>
+    </ChatInputMainWrapperUI>
   );
 };
 

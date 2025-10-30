@@ -1,6 +1,6 @@
 import type { ResType } from '@/@types/res.types';
 import useUser from '@/store/user.store';
-import { refreshToken } from './auth';
+import { refreshToken } from './auth.api';
 
 const BASE_URL = 'http://localhost:8000';
 
@@ -22,7 +22,10 @@ const reqImpl = async <R>(
   }
 ): Promise<ResType<R>> => {
   url = url.startsWith('http') ? url : `${API_URL}/${formateUrl(url)}`;
-
+  options.headers = {
+    ...options.headers,
+    'Content-Type': 'application/json',
+  };
   const res = await fetch(url, options);
 
   return res.json() as Promise<ResType<R>>;
@@ -43,7 +46,6 @@ const req = async <R>(
     method,
     headers: {
       token: `Bearer ${token}`,
-      'Content-Type': 'application/json',
     },
   };
   if (signal) {
@@ -71,9 +73,11 @@ const req = async <R>(
       )?.code === 401
     ) {
       await refreshToken();
-
-      // biome-ignore lint/style/noNonNullAssertion: it will be there
-      _options.headers.token = useUser.getState().token!;
+      const token = useUser.getState().token;
+      if (!token) {
+        throw new Error('some fetch does not handled properly "at req"');
+      }
+      _options.headers.token = token;
       const data = await reqImpl<R>(url, _options as RequestOptionsType);
 
       if (!data.success) {

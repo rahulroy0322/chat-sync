@@ -21,6 +21,23 @@ const createUser = async (data: UserType): DbResType<UserType, null> => {
   }
 };
 
+const findUsers = async (
+  where: FilterQuery<UserType>,
+  projection?: ProjectionType<UserType>
+): DbResType<UserType[], null> => {
+  try {
+    return await User.find(where, projection);
+  } catch (e) {
+    if (e instanceof DbError) {
+      return {
+        error: e,
+      };
+    }
+
+    return null;
+  }
+};
+
 const findUser = async (
   where: FilterQuery<UserType>,
   projection?: ProjectionType<UserType>
@@ -84,5 +101,6 @@ export {
   findUserByEmail,
   findUserByUserNameOrEmail,
   findUser,
+  findUsers,
   findUserByID,
 };

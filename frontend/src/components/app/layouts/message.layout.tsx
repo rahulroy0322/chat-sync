@@ -1,90 +1,85 @@
+import { useLiveQuery } from 'dexie-react-hooks';
 import { Search, UserRoundPlus } from 'lucide-react';
-import {
-  type FC,
-  type PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-} from 'react';
+import { type FC, type PropsWithChildren, useCallback } from 'react';
+import type { ChatType } from '@/@types/chat.types';
 import type { MessageType } from '@/@types/message.types';
-import { req } from '@/api/main';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { UserType } from '@/@types/user.types';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import useMessages, {
-  setFetching,
-  setMessages,
-  setMsgId,
-} from '@/store/messages.store';
+import { db } from '@/db/main';
+import useChats from '@/store/chat.store';
+import useContacts from '@/store/contact.store';
+import useSocket from '@/store/io.store';
+import useMessages, { setMsgId } from '@/store/messages.store';
 import useSettings, { setContactOpen } from '@/store/settings.store';
-import useUser from '@/store/user.store';
-import AddUsersList from '../logic/add-user-list';
+import AddUsersList from '../logic/new-message';
+import Avatar from '../ui/avatar';
 import HeaderUI from '../ui/header';
+import Loading from '../ui/loading';
 import StatusIcon from '../ui/status-icon';
-import MessagesLayoutLogic from './message-logic.layout';
+import MessagesLayoutLogic from './message-adaptive.layout';
 
-type LayoutLinkPropsType = PropsWithChildren & {
-  id: string;
-};
+type LayoutLinkPropsType = PropsWithChildren & { msg: MessageType };
 
-const LayoutLink: FC<LayoutLinkPropsType> = ({ id, children }) => {
+const LayoutLink: FC<LayoutLinkPropsType> = ({ msg, children }) => {
   const handleClick = useCallback(() => {
-    setMsgId(id);
-  }, [id]);
+    setMsgId(msg);
+  }, [msg]);
 
   return (
-    // biome-ignore lint/a11y/useButtonType: is not ay ready button
     <button
       className='flex gap-2 items-center p-1 cursor-pointer w-full'
       onClick={handleClick}
+      type='button'
     >
       {children}
     </button>
   );
 };
 
-type MassageItemPropsType = MessageType;
+type MessageItemPropsType = {
+  msg: MessageType;
+  lastChat: ChatType | null;
+  user: UserType;
+  isOnline: boolean;
+};
 
-const MassageItem: FC<MassageItemPropsType> = ({ _id, text, users }) => {
-  // biome-ignore lint/style/noNonNullAssertion: it will be there
-  const user = useUser((state) => state.user)!;
-
-  const {
-    _id: uid,
-    avatarUrl,
-    uname,
-  } = useMemo(
-    // biome-ignore lint/style/noNonNullAssertion: it will be there
-    () => users.filter((u) => u._id !== user._id).at(0)!,
-    [user._id, users.filter]
-  );
-
+const MessageItem: FC<MessageItemPropsType> = ({
+  msg,
+  user: { _id: uid, avatarUrl, uname },
+  lastChat,
+  isOnline,
+}) => {
   return (
     <li>
-      <LayoutLink id={_id}>
-        <Avatar className='size-10'>
-          <AvatarImage src={avatarUrl} />
-          <AvatarFallback>{uname}</AvatarFallback>
-        </Avatar>
+      <LayoutLink msg={msg}>
+        <Avatar
+          alt={uname}
+          className='size-10'
+          isOnline={isOnline}
+          url={avatarUrl}
+        />
+
         <div
           className='grow'
           role='presentation'
         >
           <h2 className='text-base font-semibold w-fit'>{uname}</h2>
-          <div
-            className='flex gap-1 items-center'
-            role='presentation'
-          >
-            <h3 className='line-clamp-1 text-start text-sm grow'>{text}</h3>
-            {uid === user._id ? null : (
-              <StatusIcon
-                className={cn('size-5 p-0.5 shrink-0', {
-                  'text-cyan-500': status === 'read',
-                })}
-                status={'painding'}
-              />
-            )}
-          </div>
+          {!lastChat ? null : (
+            <div
+              className='flex gap-1 items-center'
+              role='presentation'
+            >
+              <h3 className='line-clamp-1 text-start text-sm grow'>
+                {lastChat.text}
+              </h3>
+              {lastChat.sender === uid ? null : (
+                <StatusIcon
+                  className={'size-5 p-0.5 shrink-0'}
+                  status={lastChat.status}
+                />
+              )}
+            </div>
+          )}
         </div>
       </LayoutLink>
     </li>
@@ -92,56 +87,31 @@ const MassageItem: FC<MassageItemPropsType> = ({ _id, text, users }) => {
 };
 
 const MessagesList: FC = () => {
-  const messages = useMessages((state) => state.messages);
+  const messages = useLiveQuery(() => db.messages.toArray());
 
-  const isFetching = useMessages((state) => state.isFetching);
+  const contacts = useContacts((state) => state.contacts);
+  const chats = useChats((state) => state.chats);
 
-  useEffect(() => {
-    const cont = new AbortController();
+  const onlineUsers = useSocket((state) => state.onlineUsers);
 
-    const getMessages = async () => {
-      try {
-        setFetching(true);
-        const { messages } = await req<{ messages: MessageType[] }>(
-          'msg',
-          undefined,
-          cont.signal
-        );
-
-        setMessages(messages);
-      } catch (e) {
-        console.error('ERROR:', e);
-      } finally {
-        setFetching(false);
-      }
-    };
-
-    getMessages();
-
-    return () => {
-      cont.abort();
-    };
-  }, []);
-
-  if (isFetching) {
-    // TODO!
-    return 'fetching';
-  }
-
-  if (!messages) {
-    // TODO!
-    return null;
+  if (messages === undefined) {
+    return <Loading size='base' />;
   }
 
   return (
     <>
       <ul>
-        {messages.map((msg) => (
-          <MassageItem
-            key={msg._id}
-            {...msg}
-          />
-        ))}
+        {messages.map((msg) =>
+          !contacts[msg._id] ? null : (
+            <MessageItem
+              isOnline={onlineUsers.has(msg._id)}
+              key={msg._id}
+              lastChat={(msg.lastMsgId && chats[msg.lastMsgId]) || null}
+              msg={msg}
+              user={contacts[msg._id]}
+            />
+          )
+        )}
       </ul>
       <Button
         className='rounded-full cursor-pointer absolute right-5 bottom-5'
@@ -172,7 +142,7 @@ const MessagesLayout: FC<MessagesLayoutPropsType> = ({ children }) => {
 
   return (
     <MessagesLayoutLogic
-      selected={selected}
+      selected={selected?._id || null}
       side={
         <div
           className='w-full h-full md:basis-80 flex flex-col border-r'

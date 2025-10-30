@@ -1,7 +1,7 @@
 import J from 'joi';
 import type { ChatStatusType, ChatType } from '../@types/chat.types';
 
-const statuses = ['send', 'read', 'riched'] satisfies ChatStatusType[];
+const statuses = ['sent', 'read', 'reached'] satisfies ChatStatusType[];
 
 const statusSchema = J.string<ChatStatusType[]>()
   .valid(...statuses)
@@ -11,7 +11,10 @@ const statusSchema = J.string<ChatStatusType[]>()
   });
 
 const baseChatSchema = {
-  status: statusSchema.default('send' satisfies ChatStatusType),
+  status: statusSchema.default('sent' satisfies ChatStatusType),
+  receiver: J.string().required().messages({
+    'string.required': 'Receiver is required',
+  }),
 };
 
 // Text message schema
@@ -56,8 +59,34 @@ const createChatSchema = J.alternatives<ChatType>().try(
   imageChatSchema,
   videoChatSchema
 );
+
 // .messages({
 //   'alternatives.match': 'Invalid chat format',
 // });
 
-export { createChatSchema };
+type UpdateChatsSchemaType = {
+  chats: ChatType[];
+};
+
+const updateChatsSchema = J.object<UpdateChatsSchemaType>({
+  chats: J.array()
+    .items(
+      J.object<ChatType>({
+        ...baseChatSchema,
+        _id: J.string().required(),
+        type: J.string().valid('text').required(),
+        text: J.string().min(1).max(5000).required().messages({
+          'string.empty': 'Text cannot be empty',
+          'string.min': 'Text must be at least 1 character',
+          'string.max': 'Text cannot exceed 5000 characters',
+          'any.required': 'Text is required for text messages',
+        }),
+        attached: J.any().optional(),
+        // ! TODO
+        editedAt: J.any().optional(),
+      })
+    )
+    .required(),
+});
+
+export { createChatSchema, updateChatsSchema };

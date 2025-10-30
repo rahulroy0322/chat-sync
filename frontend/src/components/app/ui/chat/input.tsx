@@ -1,26 +1,28 @@
 import type { ComponentProps, FC, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-type ChatInput2ndWraperUIPropsType = Readonly<{
-  children: React.ReactNode;
+type ChatInputInnerWrapperUIPropsType = Readonly<{
+  children: ReactNode;
 }>;
 
-const ChatInput2ndWraperUI: FC<ChatInput2ndWraperUIPropsType> = ({
+type ChatInputMainWrapperUIPropsType = Readonly<{
+  children: ReactNode;
+}>;
+
+type ChatInputUIPropsType = ComponentProps<'input'>;
+
+const ChatInputInnerWrapperUI: FC<ChatInputInnerWrapperUIPropsType> = ({
   children,
 }) => (
   <div
-    className='flex items-center grow px-1 justify-center gap-0.5 border-1 rounded-sm border-input focus-within:border-primary'
+    className='flex items-center grow px-1 justify-center gap-0.5 border rounded-sm border-input focus-within:border-primary'
     role='presentation'
   >
     {children}
   </div>
 );
 
-type ChatInputMainWraperUIPropsType = Readonly<{
-  children: ReactNode;
-}>;
-
-const ChatInputMainWraperUI: FC<ChatInputMainWraperUIPropsType> = ({
+const ChatInputMainWrapperUI: FC<ChatInputMainWrapperUIPropsType> = ({
   children,
 }) => (
   <div
@@ -31,14 +33,13 @@ const ChatInputMainWraperUI: FC<ChatInputMainWraperUIPropsType> = ({
   </div>
 );
 
-type ChatInputUIPropsType = ComponentProps<'input'>;
-
 const ChatInputUI: FC<ChatInputUIPropsType> = ({ className, ...props }) => (
   <input
     className={cn('w-full outline-none border-none', className)}
     placeholder='Type Your Message...'
+    type='text'
     {...props}
   />
 );
 
-export { ChatInputUI, ChatInput2ndWraperUI, ChatInputMainWraperUI };
+export { ChatInputUI, ChatInputMainWrapperUI, ChatInputInnerWrapperUI };

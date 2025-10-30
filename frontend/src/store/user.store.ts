@@ -19,8 +19,8 @@ const useUser = create(
     }),
     {
       name: 'auth',
-      partialize: (state) =>
-        ({ refreshToken: state.refreshToken }) as UseUserType,
+      partialize: ({ refreshToken, user }) =>
+        ({ refreshToken, user }) as UseUserType,
     }
   )
 );

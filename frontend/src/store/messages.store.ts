@@ -2,25 +2,18 @@ import { create } from 'zustand';
 import type { MessageType } from '@/@types/message.types';
 
 type UseMessagesType = {
-  selectedMsg: string | null;
+  selectedMsg: MessageType | null;
   isSettingOpen: boolean;
   messages: MessageType[] | null;
-  isFetching: boolean;
 };
 
 const useMessages = create<UseMessagesType>(() => ({
   isSettingOpen: false,
   selectedMsg: null,
   messages: null,
-  isFetching: false,
 }));
 
 const { getState: get, setState: set } = useMessages;
-
-const setFetching = (isFetching: boolean) =>
-  set({
-    isFetching,
-  });
 
 const setMsgId = (msgId: UseMessagesType['selectedMsg']) =>
   set({
@@ -54,7 +47,6 @@ const addMessage = (message: MessageType) =>
 
 export {
   setMsgId,
-  setFetching,
   setMessages,
   openSetting,
   closeSetting,
