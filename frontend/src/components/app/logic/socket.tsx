@@ -65,10 +65,6 @@ const Socket: FC = () => {
 
       const msgId = useMessages.getState().selectedMsg?._id;
 
-      if (!msgId) {
-        return;
-      }
-
       const updatedChat = {
         ...chat,
         status: chat.sender === msgId ? 'read' : 'reached',
