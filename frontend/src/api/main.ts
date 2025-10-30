@@ -2,7 +2,11 @@ import type { ResType } from '@/@types/res.types';
 import useUser from '@/store/user.store';
 import { refreshToken } from './auth.api';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+if (!BASE_URL) {
+  throw new Error('"BASE_URL" is required!');
+}
 
 const API_URL = `${BASE_URL}/api/v1`;
 
