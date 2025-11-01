@@ -1,4 +1,5 @@
 import type { UserType } from '@/@types/user.types';
+import type { LoginUserType, RegisterUserType } from '@/schema/auth.schema';
 import useUser from '@/store/user.store';
 import { reqImpl } from './main';
 
@@ -41,7 +42,7 @@ const refreshToken = async (signal?: AbortSignal) => {
   }
 };
 
-const login = async (props: { email: string; password: string }) => {
+const login = async (props: LoginUserType) => {
   try {
     const data = await reqImpl<{
       user: UserType;
@@ -65,4 +66,28 @@ const login = async (props: { email: string; password: string }) => {
   }
 };
 
-export { refreshToken, login };
+const register = async (props: RegisterUserType) => {
+  try {
+    const data = await reqImpl<{
+      user: UserType;
+      token: {
+        refresh: string;
+        access: string;
+      };
+    }>('/auth/register', {
+      body: JSON.stringify(props),
+      method: 'POST',
+    });
+    if (!data.success) {
+      throw data.error;
+    }
+    return data;
+  } catch (e) {
+    console.error('ERROR: register -> ', e);
+    return {
+      error: e,
+    };
+  }
+};
+
+export { refreshToken, login, register };
