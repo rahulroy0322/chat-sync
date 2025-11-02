@@ -1,11 +1,11 @@
 import type { FC } from 'react';
-import Todo from '@/components/app/ui/todo';
+import SettingsPage from '@/pages/settings.page';
 import TabsContent from './main.tabs';
 
 const SettingsTab: FC = () => {
   return (
     <TabsContent value={'setting'}>
-      <Todo title='Settings Tab' />
+      <SettingsPage />
     </TabsContent>
   );
 };

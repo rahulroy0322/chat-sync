@@ -32,7 +32,7 @@ const SideBarUIItem: FC<SideBarUIItemPropsType> = ({
   value,
 }) => (
   <TabsTrigger
-    className='flex flex-col items-center justify-center gap-1 py-2 rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary grow-0 !shadow-none p-2 cursor-pointer border-none'
+    className='flex flex-col items-center justify-center gap-1 py-2 rounded-sm text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary grow-0 shadow-none! p-2 cursor-pointer border-none'
     value={value}
   >
     {children ? (

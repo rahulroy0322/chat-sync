@@ -64,7 +64,7 @@ const RegisterForm: FC = () => {
         }),
       {
         loading: 'Loading...',
-        success: () => 'Login Success...',
+        success: () => 'Register Success...',
         error: (e: Error) => e.message,
       }
     );
