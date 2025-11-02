@@ -26,7 +26,7 @@ type ThemeProviderPropsType = {
 
 const ThemeProvider: FC<ThemeProviderPropsType> = ({
   children,
-  defaultTheme = 'system',
+  defaultTheme = 'default',
   storageKey = 'vite-ui-theme',
 }) => {
   const [theme, _setTheme] = useState<ThemeType>(

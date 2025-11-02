@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/a11y/noLabelWithoutControl: used with chechbox */
+/** biome-ignore-all lint/a11y/noLabelWithoutControl: used with radio buttons */
 import {
   LaptopMinimal,
   LayoutPanelLeft,

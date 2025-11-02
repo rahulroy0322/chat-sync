@@ -17,7 +17,7 @@ type ModeProviderPropsType = {
 
 type ModeProviderStateType = {
   mode: ThemeModeType;
-  setMode: (Mode: ThemeModeType) => void;
+  setMode: (mode: ThemeModeType) => void;
 };
 
 const ModeProviderContext = createContext<ModeProviderStateType | null>(null);
