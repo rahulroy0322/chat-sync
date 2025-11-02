@@ -246,6 +246,7 @@ const ChatItemUI: FC<ChatItemUIPropsType> = ({ user, sender, ...props }) => {
         avatarUrl: '/profile.gif',
         _id: 'unknown',
         uname: 'unknown user',
+        email: 'unknown@email.com',
       } satisfies UserType);
 
   return (
